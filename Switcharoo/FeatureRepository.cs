@@ -12,56 +12,152 @@ public sealed class FeatureRepository : IRepository
     {
         _dbConnection = connection;
     }
-    
-    public async Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureName, Guid key)
-    {
-        const string query = $"SELECT Active FROM Features WHERE Name = @Name AND EnvironmentKey = @Key";
 
-        var active = await _dbConnection.QuerySingleOrDefaultAsync<bool?>(query, new { Name = featureName, Key = key.ToString() });
-        
+    public async Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureName, Guid environmentKey)
+    {
+        const string query = @"SELECT Active FROM FeatureEnvironments join Features on FeatureEnvironments.FeatureId = Features.Id join Environments on FeatureEnvironments.EnvironmentId = Environments.Id where Features.Name = @FeatureName and Environments.Key = @EnvironmentKey";
+
+        var active = await _dbConnection.QuerySingleOrDefaultAsync<bool?>(query, new { FeatureName = featureName, EnvironmentKey = environmentKey.ToString() });
+
         return (active ?? false, active ?? false);
     }
 
-    public async Task<(bool isActive, bool wasChanged, string reason)> ToggleFeatureAsync(string featureName, Guid key, Guid authKey)
+    public async Task<(bool isActive, bool wasChanged, string reason)> ToggleFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
     {
-        var featureState = await GetFeatureStateAsync(featureName, key);
+        var featureState = await GetFeatureStateAsync(featureKey.ToString(), environmentKey);
         if (!featureState.wasFound)
         {
             return (false, false, "Feature not found");
         }
-        
-        const string udateQuery = @"UPDATE Features SET Active = @Active WHERE Name = @Name AND EnvironmentKey = @Key";
-        await _dbConnection.ExecuteAsync(udateQuery, new { Active = !featureState.isActive, Name = featureName, Key = key.ToString() });
-        
+
+        const string updateQuery = @"UPDATE FeatureEnvironments SET Active = @Active WHERE FeatureId = (SELECT Id FROM Features WHERE Key = @FeatureKey) AND EnvironmentId = (SELECT Id FROM Environments WHERE Key = @EnvironmentKey)";
+        await _dbConnection.ExecuteAsync(updateQuery, new { Active = !featureState.isActive, FeatureKey = featureKey.ToString(), EnvironmentKey = environmentKey.ToString() });
+
         return (!featureState.isActive, true, "Feature toggled");
     }
 
-    public async Task<(bool wasAdded, string reason)> AddFeatureAsync(string featureName, string description, Guid key, Guid authKey)
+    public async Task<(bool wasAdded, string reason)> AddFeatureAsync(string featureName, string description, Guid authKey)
     {
-        if((await GetFeatureStateAsync(featureName, key)).wasFound)
+        var adminId = await GetAdminId(authKey);
+
+        if (adminId == 0)
+        {
+            return (false, "User not found");
+        }
+
+        const string featureExistsQuery = @"SELECT Count(*) FROM Features WHERE Name = @Name AND UserId = @UserId";
+        var featureExists = await _dbConnection.QuerySingleOrDefaultAsync<int>(featureExistsQuery, new { Name = featureName, UserId = adminId });
+        if (featureExists > 0)
         {
             return (false, "Feature already exists");
         }
-        
-        const string insertQuery = @"INSERT INTO Features (Name, EnvironmentKey, Description, Active) VALUES (@Name, @Key, @Description, @Active)";
-        await _dbConnection.ExecuteAsync(insertQuery, new { Name = featureName, Key = key.ToString(), Description = description, Active = false });
-        
+
+        const string insertQuery = @"INSERT INTO Features (Name, Key, Description, UserId) VALUES (@Name, @Key, @Description, @UserId)";
+        await _dbConnection.ExecuteAsync(insertQuery, new { Name = featureName, Key = Guid.NewGuid().ToString(), Description = description, UserId = adminId });
+
         return (true, "Feature added");
     }
 
-    public async Task<(bool deleted, string reason)> DeleteFeatureAsync(string featureName, Guid key, Guid authKey)
+    public async Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey)
     {
-        const string deleteQuery = @"DELETE FROM Features WHERE Name = @Name AND EnvironmentKey = @Key";
-        await _dbConnection.ExecuteAsync(deleteQuery, new { Name = featureName, Key = key.ToString() });
+        var featureId = await GetFeatureId(featureKey);
+
+        var environmentId = await GetEnvironmentId(environmentKey);
+
+        if (featureId == 0 || environmentId == 0)
+        {
+            return (false, "Feature or environment not found");
+        }
+
+        const string featureEnvironmentExistsQuery = @"SELECT Count(*) FROM FeatureEnvironments WHERE FeatureId = @FeatureId AND EnvironmentId = @EnvironmentId";
+        var featureEnvironmentExists = await _dbConnection.QuerySingleOrDefaultAsync<int>(featureEnvironmentExistsQuery, new { FeatureId = featureId, EnvironmentId = environmentId });
+        if (featureEnvironmentExists > 0)
+        {
+            return (false, "Feature environment already exists");
+        }
+
+        const string insertQuery = @"INSERT INTO FeatureEnvironments (FeatureId, EnvironmentId, Active) VALUES (@FeatureId, @EnvironmentId, @Active)";
+        await _dbConnection.ExecuteAsync(insertQuery, new { FeatureId = featureId, EnvironmentId = environmentId, Active = false });
+
+        return (true, "Feature environment added");
+    }
+
+    public async Task<(bool deleted, string reason)> DeleteFeatureAsync(Guid featureKey)
+    {
+        var featureId = await GetFeatureId(featureKey);
         
+        if (featureId == 0)
+        {
+            return (false, "Feature not found");
+        }
+        
+        const string deleteEnvironmentQuery = @"DELETE FROM FeatureEnvironments WHERE FeatureId = @FeatureId";
+        await _dbConnection.ExecuteAsync(deleteEnvironmentQuery, new { FeatureId = featureId });
+        
+        const string deleteQuery = @"DELETE FROM Features WHERE Id = @Id";
+        await _dbConnection.ExecuteAsync(deleteQuery, new { Id = featureId });
+
         return (true, "Feature deleted");
     }
 
-    public async Task<bool> IsAdminAsync(Guid key, Guid authKey)
+    public async Task<(bool deleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureKey, Guid environmentKey)
     {
-        const string query = @"SELECT * FROM UserEnvironment WHERE EnvironmentKey = @Key AND UserAuthKey = @UserAuthKey";
-        var result = await _dbConnection.QueryAsync(query, new { Key = key.ToString(), UserAuthKey = authKey.ToString() });
+        var featureId = await GetFeatureId(featureKey);
+        var environmentId = await GetEnvironmentId(environmentKey);
+        
+        if (featureId == 0 || environmentId == 0)
+        {
+            return (false, "Feature or environment not found");
+        }
+        
+        const string deleteQuery = @"DELETE FROM FeatureEnvironments WHERE FeatureId = @FeatureId AND EnvironmentId = @EnvironmentId";
+        await _dbConnection.ExecuteAsync(deleteQuery, new { FeatureId = featureId, EnvironmentId = environmentId });
+        
+        return (true, "Feature environment deleted");
+    }
+
+    public async Task<bool> IsAdminAsync(Guid authKey)
+    {
+        const string query = @"SELECT * FROM Users WHERE AuthKey = @UserAuthKey";
+        var result = await _dbConnection.QueryAsync(query, new { UserAuthKey = authKey.ToString() });
+
+        return result.Any();
+    }
+
+    public async Task<bool> IsFeatureAdminAsync(Guid featureKey, Guid authKey)
+    {
+        const string query = @"SELECT * FROM Features WHERE Key = @FeatureKey AND UserId = (SELECT Id FROM Users WHERE AuthKey = @UserAuthKey)";
+        var result = await _dbConnection.QueryAsync(query, new { FeatureKey = featureKey.ToString(), UserAuthKey = authKey.ToString() });
         
         return result.Any();
+    }
+
+    public async Task<bool> IsEnvironmentAdminAsync(Guid environmentKey, Guid authKey)
+    {
+        const string query = @"SELECT * FROM Environments WHERE Key = @EnvironmentKey AND UserId = (SELECT Id FROM Users WHERE AuthKey = @UserAuthKey)";
+        var result = await _dbConnection.QueryAsync(query, new { EnvironmentKey = environmentKey.ToString(), UserAuthKey = authKey.ToString() });
+        
+        return result.Any();
+    }
+
+    private async Task<int> GetAdminId(Guid authKey)
+    {
+        const string adminIdQuery = @"SELECT Id FROM Users WHERE AuthKey = @AuthKey";
+        var adminId = await _dbConnection.QuerySingleAsync<int>(adminIdQuery, new { AuthKey = authKey.ToString() });
+        return adminId;
+    }
+    
+    private async Task<int> GetEnvironmentId(Guid environmentKey)
+    {
+        const string environmentIdQuery = @"SELECT Id FROM Environments WHERE Key = @Key";
+        var environmentId = await _dbConnection.QuerySingleAsync<int>(environmentIdQuery, new { Key = environmentKey.ToString() });
+        return environmentId;
+    }
+
+    private async Task<int> GetFeatureId(Guid featureKey)
+    {
+        const string featureIdQuery = @"SELECT Id FROM Features WHERE Key = @Key";
+        var featureId = await _dbConnection.QuerySingleAsync<int>(featureIdQuery, new { Key = featureKey.ToString() });
+        return featureId;
     }
 }

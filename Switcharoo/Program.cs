@@ -30,24 +30,34 @@ app.UseHttpsRedirection();
 app.VerifyDatabase(app.Services.GetRequiredService<IDbConnection>());
 
 app.MapGet(
-        "/{key}/feature/{feature}",
-        async (Guid key, string feature, IFeatureProvider provider) => await provider.GetFeatureStateAsync(feature, key))
+        "/{feature}/environment/{environmentKey}",
+        async (Guid environmentKey, string feature, IFeatureProvider provider) => await provider.GetFeatureStateAsync(feature, environmentKey))
     .WithName("GetFeature").WithOpenApi();
 
 app.MapPut(
-        "/{key}/feature/{feature}/{authkey}",
-        async (Guid key, string feature, Guid authkey, IFeatureProvider provider) => await provider.ToggleFeatureAsync(feature, key, authkey))
+        "/{featureKey}/environment/{environmentKey}/{authKey}",
+        async (Guid environmentKey, Guid featureKey, Guid authKey, IFeatureProvider provider) => await provider.ToggleFeatureAsync(featureKey, environmentKey, authKey))
     .WithName("ToggleFeature").WithOpenApi();
 
 app.MapPost(
-        "/{key}/feature/{authkey}",
-        async (Guid key, Guid authkey, string feature, string description, IFeatureProvider provider) => await provider.AddFeatureAsync(feature, description, key, authkey))
+        "/feature/{authKey}",
+        async (Guid authKey, string feature, string description, IFeatureProvider provider) => await provider.AddFeatureAsync(feature, description, authKey))
     .WithName("AddFeature").WithOpenApi();
 
+app.MapPost(
+        "/{featureKey}/environment/{environmentKey}/{authKey}",
+        async (Guid environmentKey, Guid featureKey, Guid authKey, IFeatureProvider provider) => await provider.AddEnvironmentToFeatureAsync(featureKey, environmentKey, authKey))
+    .WithName("AddEnvironmentToFeature").WithOpenApi();
+
 app.MapDelete(
-        "/{key}/feature/{feature}/{authkey}",
-        async (Guid key, string feature, Guid authkey, IFeatureProvider provider) => await provider.DeleteFeatureAsync(feature, key, authkey))
+        "/{featureKey}/{authKey}",
+        async (Guid featureKey, Guid authKey, IFeatureProvider provider) => await provider.DeleteFeatureAsync(featureKey, authKey))
     .WithName("DeleteFeature").WithOpenApi();
+
+app.MapDelete(
+        "/{featureKey}/environment/{environmentKey}/{authKey}",
+        async (Guid environmentKey, Guid featureKey, Guid authKey, IFeatureProvider provider) => await provider.DeleteEnvironmentFromFeatureAsync(featureKey, environmentKey, authKey))
+    .WithName("DeleteEnvironmentFromFeature").WithOpenApi();
 
 app.Run();
 
@@ -73,6 +83,6 @@ public static class WebApplicationExtensions
         var sqlScript = reader.ReadToEnd();
         connection.Execute(sqlScript);
         
-        connection.Execute("INSERT INTO Users (Name, AuthKey) VALUES (@Name, @AuthKey)", new {Name = "Admin", AuthKey = Guid.NewGuid()});
+        connection.Execute("INSERT INTO Users (Name, authKey) VALUES (@Name, @authKey)", new {Name = "Admin", authKey = Guid.NewGuid()});
     }
 }

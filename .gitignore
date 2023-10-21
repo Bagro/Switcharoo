@@ -405,7 +405,8 @@ FodyWeavers.xsd
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -505,3 +506,5 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
+.idea/
+Switcharoo/switcharoo.sqlite

@@ -1,3 +1,3 @@
 namespace Switcharoo.Entities;
 
-public sealed record User(Guid AuthKey, string Name);
+public sealed record User(int Id, Guid AuthKey, string Name);
