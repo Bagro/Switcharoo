@@ -62,15 +62,17 @@ public static class WebApplicationExtensions
             return; 
         }
 
-        CreateTables(connection);
+        InitDatabase(connection);
     }
 
-    private static void CreateTables(IDbConnection connection)
+    private static void InitDatabase(IDbConnection connection)
     {
         using var stream = Assembly.GetCallingAssembly().GetManifestResourceStream("Switcharoo.Database.db.sql");
         using var reader = new StreamReader(stream!);
 
         var sqlScript = reader.ReadToEnd();
         connection.Execute(sqlScript);
+        
+        connection.Execute("INSERT INTO Users (Name, AuthKey) VALUES (@Name, @AuthKey)", new {Name = "Admin", AuthKey = Guid.NewGuid()});
     }
 }
