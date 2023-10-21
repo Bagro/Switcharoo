@@ -17,23 +17,26 @@ public sealed class FeatureRepository : IRepository
     {
         const string query = @"SELECT Active FROM FeatureEnvironments join Features on FeatureEnvironments.FeatureId = Features.Id join Environments on FeatureEnvironments.EnvironmentId = Environments.Id where Features.Name = @FeatureName and Environments.Key = @EnvironmentKey";
 
-        var active = await _dbConnection.QuerySingleOrDefaultAsync<bool?>(query, new { FeatureName = featureName, EnvironmentKey = environmentKey.ToString() });
+        var active = await _dbConnection.QuerySingleOrDefaultAsync<bool?>(query, new { FeatureName = featureName, EnvironmentKey = environmentKey.ToString().ToUpperInvariant() });
 
         return (active ?? false, active ?? false);
     }
 
     public async Task<(bool isActive, bool wasChanged, string reason)> ToggleFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
     {
-        var featureState = await GetFeatureStateAsync(featureKey.ToString(), environmentKey);
-        if (!featureState.wasFound)
+        var featureId = await GetFeatureId(featureKey);
+        if (featureId == 0)
         {
             return (false, false, "Feature not found");
         }
+        
+        const string featureStateQuery = @"SELECT Active FROM FeatureEnvironments WHERE FeatureId = @FeatureId AND EnvironmentId = (SELECT Id FROM Environments WHERE Key = @EnvironmentKey)";
+        var featureState = await _dbConnection.QuerySingleAsync<bool>(featureStateQuery, new { FeatureId = featureId, EnvironmentKey = environmentKey.ToString().ToUpperInvariant() });
 
         const string updateQuery = @"UPDATE FeatureEnvironments SET Active = @Active WHERE FeatureId = (SELECT Id FROM Features WHERE Key = @FeatureKey) AND EnvironmentId = (SELECT Id FROM Environments WHERE Key = @EnvironmentKey)";
-        await _dbConnection.ExecuteAsync(updateQuery, new { Active = !featureState.isActive, FeatureKey = featureKey.ToString(), EnvironmentKey = environmentKey.ToString() });
+        await _dbConnection.ExecuteAsync(updateQuery, new { Active = !featureState, FeatureKey = featureKey.ToString().ToUpperInvariant(), EnvironmentKey = environmentKey.ToString().ToUpperInvariant() });
 
-        return (!featureState.isActive, true, "Feature toggled");
+        return (!featureState, true, "Feature toggled");
     }
 
     public async Task<(bool wasAdded, string reason)> AddFeatureAsync(string featureName, string description, Guid authKey)
@@ -53,7 +56,7 @@ public sealed class FeatureRepository : IRepository
         }
 
         const string insertQuery = @"INSERT INTO Features (Name, Key, Description, UserId) VALUES (@Name, @Key, @Description, @UserId)";
-        await _dbConnection.ExecuteAsync(insertQuery, new { Name = featureName, Key = Guid.NewGuid().ToString(), Description = description, UserId = adminId });
+        await _dbConnection.ExecuteAsync(insertQuery, new { Name = featureName, Key = Guid.NewGuid().ToString().ToUpperInvariant(), Description = description, UserId = adminId });
 
         return (true, "Feature added");
     }
@@ -119,7 +122,7 @@ public sealed class FeatureRepository : IRepository
     public async Task<bool> IsAdminAsync(Guid authKey)
     {
         const string query = @"SELECT * FROM Users WHERE AuthKey = @UserAuthKey";
-        var result = await _dbConnection.QueryAsync(query, new { UserAuthKey = authKey.ToString() });
+        var result = await _dbConnection.QueryAsync(query, new { UserAuthKey = authKey.ToString().ToUpperInvariant() });
 
         return result.Any();
     }
@@ -127,7 +130,7 @@ public sealed class FeatureRepository : IRepository
     public async Task<bool> IsFeatureAdminAsync(Guid featureKey, Guid authKey)
     {
         const string query = @"SELECT * FROM Features WHERE Key = @FeatureKey AND UserId = (SELECT Id FROM Users WHERE AuthKey = @UserAuthKey)";
-        var result = await _dbConnection.QueryAsync(query, new { FeatureKey = featureKey.ToString(), UserAuthKey = authKey.ToString() });
+        var result = await _dbConnection.QueryAsync(query, new { FeatureKey = featureKey.ToString().ToUpperInvariant(), UserAuthKey = authKey.ToString().ToUpperInvariant() });
         
         return result.Any();
     }
@@ -135,7 +138,7 @@ public sealed class FeatureRepository : IRepository
     public async Task<bool> IsEnvironmentAdminAsync(Guid environmentKey, Guid authKey)
     {
         const string query = @"SELECT * FROM Environments WHERE Key = @EnvironmentKey AND UserId = (SELECT Id FROM Users WHERE AuthKey = @UserAuthKey)";
-        var result = await _dbConnection.QueryAsync(query, new { EnvironmentKey = environmentKey.ToString(), UserAuthKey = authKey.ToString() });
+        var result = await _dbConnection.QueryAsync(query, new { EnvironmentKey = environmentKey.ToString().ToUpperInvariant(), UserAuthKey = authKey.ToString().ToUpperInvariant() });
         
         return result.Any();
     }
@@ -143,21 +146,21 @@ public sealed class FeatureRepository : IRepository
     private async Task<int> GetAdminId(Guid authKey)
     {
         const string adminIdQuery = @"SELECT Id FROM Users WHERE AuthKey = @AuthKey";
-        var adminId = await _dbConnection.QuerySingleAsync<int>(adminIdQuery, new { AuthKey = authKey.ToString() });
+        var adminId = await _dbConnection.QuerySingleAsync<int>(adminIdQuery, new { AuthKey = authKey.ToString().ToUpperInvariant() });
         return adminId;
     }
     
     private async Task<int> GetEnvironmentId(Guid environmentKey)
     {
         const string environmentIdQuery = @"SELECT Id FROM Environments WHERE Key = @Key";
-        var environmentId = await _dbConnection.QuerySingleAsync<int>(environmentIdQuery, new { Key = environmentKey.ToString() });
+        var environmentId = await _dbConnection.QuerySingleAsync<int>(environmentIdQuery, new { Key = environmentKey.ToString().ToUpperInvariant() });
         return environmentId;
     }
 
     private async Task<int> GetFeatureId(Guid featureKey)
     {
         const string featureIdQuery = @"SELECT Id FROM Features WHERE Key = @Key";
-        var featureId = await _dbConnection.QuerySingleAsync<int>(featureIdQuery, new { Key = featureKey.ToString() });
+        var featureId = await _dbConnection.QuerySingleAsync<int>(featureIdQuery, new { Key = featureKey.ToString().ToUpperInvariant() });
         return featureId;
     }
 }
