@@ -1,43 +1,51 @@
 create table Users
 (
-    AuthKey TEXT NOT NULL
+    Id      INTEGER NOT NULL
         constraint Users_pk
-        primary key,
-    Name TEXT NOT NULL
+            primary key autoincrement,
+    AuthKey TEXT    NOT NULL,
+    Name    TEXT    NOT NULL
 );
 
 create table Environments
 (
-    Key TEXT NOT NULL
+    Id   INTEGER NOT NULL
         constraint Environments_pk
-        primary key,
-    Name TEXT NOT NULL
+            primary key autoincrement,
+    Key  TEXT    NOT NULL,
+    Name TEXT    NOT NULL
 );
 
 create table UserEnvironment
 (
-    UserAuthKey TEXT NOT NULL
+    UserId        INTEGER NOT NULL
         constraint UserEnvironment_Users_authKey_fk
             references Users,
-    EnvironmentKey TEXT NOT NULL
+    EnvironmentId INTEGER NOT NULL
         constraint UserEnvironment_Environments_key_fk
             references Environments,
     constraint UserEnvironment_pk
-        primary key (userAuthKey, environmentKey)
+        primary key (UserId, EnvironmentId)
 );
 
 create table Features
 (
-    Id INTEGER NOT NULL
+    Id          INTEGER NOT NULL
         constraint Features_pk
-            primary key,
-    Name TEXT NOT NULL,
-    Description TEXT NOT NULL,
-    Active INTEGER default 0 NOT NULL,
-    EnvironmentKey TEXT NOT NULL
-        constraint Features_Environments_key_fk
+            primary key autoincrement,
+    Name        TEXT    NOT NULL,
+    Description TEXT    NOT NULL
+);
+
+create table FeatureEnvironments
+(
+    FeatureId     INTEGER           NOT NULL
+        constraint FeatureEnvironment_Features_id_fk
+            references Features,
+    EnvironmentId INTEGER           NOT NULL
+        constraint FeatureEnvironment_Environments_id_fk
             references Environments,
-    constraint Features_Environments_key_fk
-        foreign key (environmentKey) references Environments
-            on update cascade on delete cascade
+    Active        INTEGER default 0 NOT NULL,
+    constraint FeatureEnvironment_pk
+        primary key (FeatureId, EnvironmentId)
 );
