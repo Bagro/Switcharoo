@@ -39,26 +39,27 @@ public sealed class FeatureRepository : IRepository
         return (!featureState, true, "Feature toggled");
     }
 
-    public async Task<(bool wasAdded, string reason)> AddFeatureAsync(string featureName, string description, Guid authKey)
+    public async Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(string featureName, string description, Guid authKey)
     {
         var adminId = await GetAdminId(authKey);
 
         if (adminId == 0)
         {
-            return (false, "User not found");
+            return (false, Guid.Empty, "User not found");
         }
 
         const string featureExistsQuery = @"SELECT Count(*) FROM Features WHERE Name = @Name AND UserId = @UserId";
         var featureExists = await _dbConnection.QuerySingleOrDefaultAsync<int>(featureExistsQuery, new { Name = featureName, UserId = adminId });
         if (featureExists > 0)
         {
-            return (false, "Feature already exists");
+            return (false, Guid.Empty, "Feature already exists");
         }
 
         const string insertQuery = @"INSERT INTO Features (Name, Key, Description, UserId) VALUES (@Name, @Key, @Description, @UserId)";
-        await _dbConnection.ExecuteAsync(insertQuery, new { Name = featureName, Key = Guid.NewGuid().ToString().ToUpperInvariant(), Description = description, UserId = adminId });
+        var key = Guid.NewGuid();
+        await _dbConnection.ExecuteAsync(insertQuery, new { Name = featureName, Key = key.ToString().ToUpperInvariant(), Description = description, UserId = adminId });
 
-        return (true, "Feature added");
+        return (true, key, "Feature added");
     }
 
     public async Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey)

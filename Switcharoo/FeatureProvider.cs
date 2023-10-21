@@ -7,9 +7,9 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
 {
     public async Task<FeatureStateResponse> GetFeatureStateAsync(string featureName, Guid environmentKey)
     {
-        var featureStateAsync = await repository.GetFeatureStateAsync(featureName, environmentKey);
+        var featureState = await repository.GetFeatureStateAsync(featureName, environmentKey);
 
-        return new FeatureStateResponse(featureName, featureStateAsync.isActive);
+        return new FeatureStateResponse(featureName, featureState.isActive);
     }
 
     public async Task<ToggleFeatureResponse> ToggleFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
@@ -23,9 +23,9 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
             return new ToggleFeatureResponse(featureKey.ToString(), false, false, "Not authorized");
         }
         
-        var toggleFeatureAsync = await repository.ToggleFeatureAsync(featureKey, environmentKey, authKey);
+        var result = await repository.ToggleFeatureAsync(featureKey, environmentKey, authKey);
         
-        return new ToggleFeatureResponse(featureKey.ToString(), toggleFeatureAsync.isActive, toggleFeatureAsync.wasChanged, toggleFeatureAsync.reason);
+        return new ToggleFeatureResponse(featureKey.ToString(), result.isActive, result.wasChanged, result.reason);
     }
 
     public async Task<AddFeatureResponse> AddFeatureAsync(string featureName, string description, Guid authKey)
@@ -33,15 +33,15 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         var isAdmin = await repository.IsAdminAsync(authKey);
         if (!isAdmin)
         {
-            return new AddFeatureResponse(featureName, false, "Not authorized");
+            return new AddFeatureResponse(featureName, Guid.Empty, false, "Not authorized");
         }
         
-        var addFeatureAsync = await repository.AddFeatureAsync(featureName, description, authKey);
+        var result = await repository.AddFeatureAsync(featureName, description, authKey);
         
-        return new AddFeatureResponse(featureName, addFeatureAsync.wasAdded, addFeatureAsync.reason);
+        return new AddFeatureResponse(featureName, result.key, result.wasAdded, result.reason);
     }
     
-    public async Task<AddFeatureResponse> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
+    public async Task<AddEnvironmentToFeatureResponse> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
     {
         var isAdmin = await repository.IsAdminAsync(authKey);
         var isFeatureAdmin = await repository.IsFeatureAdminAsync(featureKey, authKey);
@@ -49,12 +49,12 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         
         if (!isAdmin || !isFeatureAdmin || !isEnvironmentAdmin)
         {
-            return new AddFeatureResponse(featureKey.ToString(), false, "Not authorized");
+            return new AddEnvironmentToFeatureResponse(false, "Not authorized");
         }
         
-        var addFeatureAsync = await repository.AddEnvironmentToFeatureAsync(featureKey, environmentKey);
+        var result = await repository.AddEnvironmentToFeatureAsync(featureKey, environmentKey);
         
-        return new AddFeatureResponse(featureKey.ToString(), addFeatureAsync.wasAdded, addFeatureAsync.reason);
+        return new AddEnvironmentToFeatureResponse(result.wasAdded, result.reason);
     }
 
     public async Task<DeleteFeatureResponse> DeleteFeatureAsync(Guid featureKey, Guid authKey)
@@ -64,12 +64,12 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         
         if (!isAdmin || !isFeatureAdmin)
         {
-            return new DeleteFeatureResponse(featureKey.ToString(), false, "Not authorized");
+            return new DeleteFeatureResponse(false, "Not authorized");
         }
         
-        var deleteFeatureAsync = await repository.DeleteFeatureAsync(featureKey);
+        var result = await repository.DeleteFeatureAsync(featureKey);
         
-        return new DeleteFeatureResponse(featureKey.ToString(), deleteFeatureAsync.deleted, deleteFeatureAsync.reason);
+        return new DeleteFeatureResponse(result.deleted, result.reason);
     }
     
     public async Task<DeleteFeatureResponse> DeleteEnvironmentFromFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
@@ -80,11 +80,11 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         
         if (!isAdmin || !isFeatureAdmin || !isEnvironmentAdmin)
         {
-            return new DeleteFeatureResponse(featureKey.ToString(), false, "Not authorized");
+            return new DeleteFeatureResponse(false, "Not authorized");
         }
         
-        var deleteFeatureAsync = await repository.DeleteEnvironmentFromFeatureAsync(featureKey, environmentKey);
+        var result = await repository.DeleteEnvironmentFromFeatureAsync(featureKey, environmentKey);
         
-        return new DeleteFeatureResponse(featureKey.ToString(), deleteFeatureAsync.deleted, deleteFeatureAsync.reason);
+        return new DeleteFeatureResponse(result.deleted, result.reason);
     }
 }

@@ -10,7 +10,7 @@ public interface IFeatureProvider
     
     Task<AddFeatureResponse> AddFeatureAsync(string featureName, string description, Guid authKey);
     
-    Task<AddFeatureResponse> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey);
+    Task<AddEnvironmentToFeatureResponse> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey);
     
     Task<DeleteFeatureResponse> DeleteFeatureAsync(Guid featureKey, Guid authKey);
     

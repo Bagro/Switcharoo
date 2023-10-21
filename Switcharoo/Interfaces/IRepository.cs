@@ -8,7 +8,7 @@ public interface IRepository
 
     Task<(bool isActive, bool wasChanged, string reason)> ToggleFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey);
 
-    Task<(bool wasAdded, string reason)> AddFeatureAsync(string featureName, string description, Guid authKey);
+    Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(string featureName, string description, Guid authKey);
 
     Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey);
 
