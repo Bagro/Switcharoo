@@ -9,23 +9,14 @@ create table Users
 
 create table Environments
 (
-    Id   INTEGER NOT NULL
+    Id     INTEGER NOT NULL
         constraint Environments_pk
             primary key autoincrement,
-    Key  TEXT    NOT NULL,
-    Name TEXT    NOT NULL
-);
-
-create table UserEnvironment
-(
-    UserId        INTEGER NOT NULL
-        constraint UserEnvironment_Users_authKey_fk
-            references Users,
-    EnvironmentId INTEGER NOT NULL
-        constraint UserEnvironment_Environments_key_fk
-            references Environments,
-    constraint UserEnvironment_pk
-        primary key (UserId, EnvironmentId)
+    Key    TEXT    NOT NULL,
+    Name   TEXT    NOT NULL,
+    UserId INTEGER NOT NULL
+        constraint Environments_Users_id_fk
+            references Users
 );
 
 create table Features
@@ -33,8 +24,12 @@ create table Features
     Id          INTEGER NOT NULL
         constraint Features_pk
             primary key autoincrement,
+    Key         TEXT    NOT NULL,
     Name        TEXT    NOT NULL,
-    Description TEXT    NOT NULL
+    Description TEXT    NOT NULL,
+    UserId      INTEGER NOT NULL
+        constraint Features_Users_id_fk
+            references Users
 );
 
 create table FeatureEnvironments
