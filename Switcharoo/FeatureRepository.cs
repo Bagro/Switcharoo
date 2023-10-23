@@ -120,6 +120,29 @@ public sealed class FeatureRepository : IRepository
         return (true, "Feature environment deleted");
     }
 
+    public async Task<(bool wasAdded, Guid key, string reason)> AddEnvironmentAsync(string environmentName, Guid authKey)
+    {
+        var adminId = await GetAdminId(authKey);
+        
+        if (adminId == 0)
+        {
+            return (false, Guid.Empty, "User not found");
+        }
+        
+        const string environmentExistsQuery = @"SELECT Count(*) FROM Environments WHERE Name = @Name AND UserId = @UserId";
+        var environmentExists = await _dbConnection.QuerySingleOrDefaultAsync<int>(environmentExistsQuery, new { Name = environmentName, UserId = adminId });
+        if (environmentExists > 0)
+        {
+            return (false, Guid.Empty, "Environment already exists");
+        }
+        
+        const string insertQuery = @"INSERT INTO Environments (Name, Key, UserId) VALUES (@Name, @Key, @UserId)";
+        var key = Guid.NewGuid();
+        await _dbConnection.ExecuteAsync(insertQuery, new { Name = environmentName, Key = key.ToString().ToUpperInvariant(), UserId = adminId });
+        
+        return (true, key, "Environment added");
+    }
+
     public async Task<bool> IsAdminAsync(Guid authKey)
     {
         const string query = @"SELECT * FROM Users WHERE AuthKey = @UserAuthKey";

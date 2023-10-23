@@ -15,6 +15,8 @@ public interface IRepository
     Task<(bool deleted, string reason)> DeleteFeatureAsync(Guid featureKey);
 
     Task<(bool deleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureKey, Guid environmentKey);
+    
+    Task<(bool wasAdded, Guid key, string reason)> AddEnvironmentAsync(string environmentName, Guid authKey);
 
     Task<bool> IsAdminAsync(Guid authKey);
 

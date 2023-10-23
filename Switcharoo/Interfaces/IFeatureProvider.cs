@@ -4,15 +4,16 @@ namespace Switcharoo.Interfaces;
 
 public interface IFeatureProvider
 {
-    Task<FeatureStateResponse> GetFeatureStateAsync(string featureName, Guid environmentKey);
+    Task<IResult> GetFeatureStateAsync(string featureName, Guid environmentKey);
 
-    Task<ToggleFeatureResponse> ToggleFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey);
+    Task<IResult> ToggleFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey);
     
-    Task<AddFeatureResponse> AddFeatureAsync(string featureName, string description, Guid authKey);
+    Task<IResult> AddFeatureAsync(string featureName, string description, Guid authKey);
     
-    Task<AddEnvironmentToFeatureResponse> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey);
+    Task<IResult> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey);
     
-    Task<DeleteFeatureResponse> DeleteFeatureAsync(Guid featureKey, Guid authKey);
+    Task<IResult> DeleteFeatureAsync(Guid featureKey, Guid authKey);
     
-    Task<DeleteFeatureResponse> DeleteEnvironmentFromFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey);
+    Task<IResult> DeleteEnvironmentFromFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey);
+    Task<IResult> AddEnvironmentAsync(string environmentName, Guid authKey);
 }
