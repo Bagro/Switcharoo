@@ -25,7 +25,9 @@ public static class WebApplicationExtensions
 
         var sqlScript = reader.ReadToEnd();
         connection.Execute(sqlScript);
+        var newGuid = Guid.NewGuid();
+        connection.Execute("INSERT INTO Users (Name, authKey) VALUES (@Name, @authKey)", new {Name = "Admin", authKey = newGuid});
         
-        connection.Execute("INSERT INTO Users (Name, authKey) VALUES (@Name, @authKey)", new {Name = "Admin", authKey = Guid.NewGuid()});
+        Console.WriteLine($"Admin authKey: {newGuid}");
     }
 }
