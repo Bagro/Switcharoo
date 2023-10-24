@@ -1,7 +1,10 @@
 using System.Data;
+using System.Net;
 using Microsoft.Data.Sqlite;
 using Switcharoo;
 using Switcharoo.Interfaces;
+using Switcharoo.Model;
+using Environment = Switcharoo.Model.Environment;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,42 +31,40 @@ app.UseHttpsRedirection();
 app.VerifyDatabase(app.Services.GetRequiredService<IDbConnection>());
 
 app.MapGet("/environments/{authKey}", async (Guid authKey, IFeatureProvider provider) => await provider.GetEnvironmentsAsync(authKey))
-    .WithName("GetEnvironments").WithOpenApi();
+    .WithName("GetEnvironments").WithOpenApi().Produces<List<Environment>>().Produces((int)HttpStatusCode.BadRequest, typeof(string)).Produces((int)HttpStatusCode.Forbidden);
 
 app.MapPost("/environment/{authKey}", async (Guid authKey, string environmentName, IFeatureProvider provider) => await provider.AddEnvironmentAsync(environmentName, authKey))
-    .WithName("AddEnvironment").WithOpenApi();
+    .WithName("AddEnvironment").WithOpenApi().Produces<AddResponse>().Produces((int)HttpStatusCode.BadRequest, typeof(string)).Produces((int)HttpStatusCode.Forbidden);
 
 app.MapGet("/features/{authKey}", async (Guid authKey, IFeatureProvider provider) => await provider.GetFeaturesAsync(authKey))
-    .WithName("GetFeatures").WithOpenApi();
+    .WithName("GetFeatures").WithOpenApi().Produces<List<Feature>>().Produces((int)HttpStatusCode.BadRequest, typeof(string)).Produces((int)HttpStatusCode.Forbidden);
 
-app.MapGet(
-        "/feature/{featureName}/environment/{environmentKey}",
-        async (Guid environmentKey, string featureName, IFeatureProvider provider) => await provider.GetFeatureStateAsync(featureName, environmentKey))
-    .WithName("GetFeature").WithOpenApi();
+app.MapGet("/feature/{featureName}/environment/{environmentKey}", async (Guid environmentKey, string featureName, IFeatureProvider provider) => await provider.GetFeatureStateAsync(featureName, environmentKey))
+    .WithName("GetFeature").WithOpenApi().Produces<FeatureStateResponse>();
 
 app.MapPut(
         "/feature/{featureKey}/environment/{environmentKey}/{authKey}",
         async (Guid environmentKey, Guid featureKey, Guid authKey, IFeatureProvider provider) => await provider.ToggleFeatureAsync(featureKey, environmentKey, authKey))
-    .WithName("ToggleFeature").WithOpenApi();
+    .WithName("ToggleFeature").WithOpenApi().Produces<ToggleFeatureResponse>().Produces((int)HttpStatusCode.Forbidden);
 
 app.MapPost(
         "/feature/{authKey}",
         async (Guid authKey, string feature, string description, IFeatureProvider provider) => await provider.AddFeatureAsync(feature, description, authKey))
-    .WithName("AddFeature").WithOpenApi();
+    .WithName("AddFeature").WithOpenApi().Produces<AddResponse>().Produces((int)HttpStatusCode.BadRequest, typeof(string)).Produces((int)HttpStatusCode.Forbidden);
 
 app.MapPost(
         "/feature/{featureKey}/environment/{environmentKey}/{authKey}",
         async (Guid environmentKey, Guid featureKey, Guid authKey, IFeatureProvider provider) => await provider.AddEnvironmentToFeatureAsync(featureKey, environmentKey, authKey))
-    .WithName("AddEnvironmentToFeature").WithOpenApi();
+    .WithName("AddEnvironmentToFeature").WithOpenApi().Produces((int)HttpStatusCode.OK).Produces((int)HttpStatusCode.BadRequest, typeof(string)).Produces((int)HttpStatusCode.Forbidden);
 
 app.MapDelete(
         "/feature/{featureKey}/{authKey}",
         async (Guid featureKey, Guid authKey, IFeatureProvider provider) => await provider.DeleteFeatureAsync(featureKey, authKey))
-    .WithName("DeleteFeature").WithOpenApi();
+    .WithName("DeleteFeature").WithOpenApi().Produces((int)HttpStatusCode.OK).Produces((int)HttpStatusCode.BadRequest, typeof(string)).Produces((int)HttpStatusCode.Forbidden);
 
 app.MapDelete(
         "/feature/{featureKey}/environment/{environmentKey}/{authKey}",
         async (Guid environmentKey, Guid featureKey, Guid authKey, IFeatureProvider provider) => await provider.DeleteEnvironmentFromFeatureAsync(featureKey, environmentKey, authKey))
-    .WithName("DeleteEnvironmentFromFeature").WithOpenApi();
+    .WithName("DeleteEnvironmentFromFeature").WithOpenApi().Produces((int)HttpStatusCode.OK).Produces((int)HttpStatusCode.BadRequest, typeof(string)).Produces((int)HttpStatusCode.Forbidden);
 
 app.Run();
