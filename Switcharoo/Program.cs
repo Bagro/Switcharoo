@@ -27,8 +27,14 @@ app.UseHttpsRedirection();
 
 app.VerifyDatabase(app.Services.GetRequiredService<IDbConnection>());
 
+app.MapGet("/environments/{authKey}", async (Guid authKey, IFeatureProvider provider) => await provider.GetEnvironmentsAsync(authKey))
+    .WithName("GetEnvironments").WithOpenApi();
+
 app.MapPost("/environment/{authKey}", async (Guid authKey, string environmentName, IFeatureProvider provider) => await provider.AddEnvironmentAsync(environmentName, authKey))
     .WithName("AddEnvironment").WithOpenApi();
+
+app.MapGet("/features/{authKey}", async (Guid authKey, IFeatureProvider provider) => await provider.GetFeaturesAsync(authKey))
+    .WithName("GetFeatures").WithOpenApi();
 
 app.MapGet(
         "/feature/{featureName}/environment/{environmentKey}",

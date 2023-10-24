@@ -1,6 +1,9 @@
 using System.Data;
 using Dapper;
+using Switcharoo.Entities;
 using Switcharoo.Interfaces;
+using Switcharoo.Model;
+using Environment = Switcharoo.Model.Environment;
 
 namespace Switcharoo;
 
@@ -141,6 +144,66 @@ public sealed class FeatureRepository : IRepository
         await _dbConnection.ExecuteAsync(insertQuery, new { Name = environmentName, Key = key.ToString().ToUpperInvariant(), UserId = adminId });
         
         return (true, key, "Environment added");
+    }
+
+    public async Task<(bool wasFound, List<Environment> environments, string reason)> GetEnvironmentsAsync(Guid authKey)
+    {
+        const string query = "SELECT Key, Name FROM Environments WHERE UserId = (SELECT Id FROM Users WHERE AuthKey = @AuthKey)";
+        var result = (await _dbConnection.QueryAsync(query, new { AuthKey = authKey.ToString().ToUpperInvariant() })).ToList();
+
+        var environments = new List<Environment>();
+        foreach (var environment in result)
+        {
+            environments.Add(new Environment(new Guid(environment.Key), environment.Name));
+        }
+        
+        return (environments.Any(), environments, environments.Any() ? "Environments found" : "No environments found"); 
+    }
+
+    public async Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid authKey)
+    {
+        var isAdmin = await IsAdminAsync(authKey);
+        if (!isAdmin)
+        {
+            return (false, new List<Feature>(), "User not found");
+        }
+        
+        const string featuresQuery = @"SELECT Id, Key, Name, Description FROM Features WHERE UserId = (SELECT Id FROM Users WHERE AuthKey = @AuthKey)";
+        var featuresTask = _dbConnection.QueryAsync(featuresQuery, new { AuthKey = authKey.ToString().ToUpperInvariant() });
+        
+        const string environmentsQuery = "SELECT Id, Key, Name FROM Environments WHERE UserId = (SELECT Id FROM Users WHERE AuthKey = @AuthKey)";
+        var environmentsTask = _dbConnection.QueryAsync(environmentsQuery, new { AuthKey = authKey.ToString().ToUpperInvariant() });
+        
+        await Task.WhenAll(featuresTask, environmentsTask);
+
+        var foundFeatures = featuresTask.Result.ToList();
+        var foundEnvironments = environmentsTask.Result.ToList();
+        
+        var features = new List<Feature>();
+        
+        foreach (var result in foundFeatures)
+        {
+            const string featureEnvironmentsQuery = @"SELECT EnvironmentId, Active FROM FeatureEnvironments WHERE  FeatureId = @FeatureId";
+            var featureEnvironments = await _dbConnection.QueryAsync(featureEnvironmentsQuery, new { FeatureId = result.Id });
+
+            var environments = new List<FeatureEnvironment>();
+            
+            foreach (var featureEnvironment in featureEnvironments)
+            {
+                var environment = foundEnvironments.SingleOrDefault(x => x.Id == featureEnvironment.EnvironmentId);
+                if (environment == null)
+                {
+                    continue;
+                }
+
+                environments.Add(new FeatureEnvironment(new Guid(environment.Key), environment.Name.ToString(), Convert.ToBoolean(featureEnvironment.Active)));
+            }
+            
+            var feature = new Feature(result.Name, result.Description, new Guid(result.Key), environments);   
+            features.Add(feature);
+        }
+
+        return (true, features, string.Empty);
     }
 
     public async Task<bool> IsAdminAsync(Guid authKey)

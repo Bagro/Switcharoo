@@ -101,4 +101,30 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         
         return result.wasAdded ? Results.Ok(new AddResponse(environmentName, result.key, result.wasAdded, result.reason)) : Results.BadRequest(result.reason);
     }
+
+    public async Task<IResult> GetEnvironmentsAsync(Guid authKey)
+    {
+        var isAdmin = await repository.IsAdminAsync(authKey);
+        if (!isAdmin)
+        {
+            return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
+        }
+        
+        var result = await repository.GetEnvironmentsAsync(authKey);
+        
+        return result.wasFound ? Results.Ok(result.environments) : Results.BadRequest(result.reason);
+    }
+
+    public async Task<IResult> GetFeaturesAsync(Guid authKey)
+    {
+        var isAdmin = await repository.IsAdminAsync(authKey);
+        if (!isAdmin)
+        {
+            return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
+        }
+        
+        var result = await repository.GetFeaturesAsync(authKey);
+        
+        return result.wasFound ? Results.Ok(result.features) : Results.BadRequest(result.reason);
+    }
 }

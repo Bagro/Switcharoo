@@ -15,5 +15,10 @@ public interface IFeatureProvider
     Task<IResult> DeleteFeatureAsync(Guid featureKey, Guid authKey);
     
     Task<IResult> DeleteEnvironmentFromFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey);
+    
     Task<IResult> AddEnvironmentAsync(string environmentName, Guid authKey);
+    
+    Task<IResult> GetEnvironmentsAsync(Guid authKey);
+    
+    Task<IResult> GetFeaturesAsync(Guid authKey);
 }
