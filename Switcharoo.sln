@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switcharoo", "Switcharoo\Switcharoo.csproj", "{21F90926-61AD-4C72-9230-8CB8942F6A95}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switcharoo", "src\Switcharoo\Switcharoo.csproj", "{21F90926-61AD-4C72-9230-8CB8942F6A95}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switcharoo.Tests", "Switcharoo.Tests\Switcharoo.Tests.csproj", "{A623E622-7941-417F-802A-7B73143CD40B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switcharoo.Tests", "src\Switcharoo.Tests\Switcharoo.Tests.csproj", "{A623E622-7941-417F-802A-7B73143CD40B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
