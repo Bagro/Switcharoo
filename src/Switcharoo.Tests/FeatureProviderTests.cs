@@ -35,6 +35,21 @@ public sealed class FeatureProviderTests
         // Assert
         ((Ok<FeatureStateResponse>)result).Value.Should().BeEquivalentTo(featureState);
     }
+    
+    [Fact]
+    public async Task GetFeatureStateAsync_WhenFeatureNotFound_ReturnsNotFound()
+    {
+        // Arrange
+        const string featureName = "TestFeature";
+        var environmentKey = Guid.NewGuid();
+        _repository.GetFeatureStateAsync(featureName, environmentKey).Returns((false, false));
+
+        // Act
+        var result = await _featureProvider.GetFeatureStateAsync(featureName, environmentKey);
+
+        // Assert
+        ((NotFound<string>)result).StatusCode.Should().Be(404);
+    }
    
     [Fact]
     public async Task ToggleFeatureAsync_WhenCalled_ReturnsToggleFeatureResponse()

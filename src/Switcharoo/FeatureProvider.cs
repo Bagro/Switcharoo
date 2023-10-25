@@ -10,7 +10,7 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
     {
         var featureState = await repository.GetFeatureStateAsync(featureName, environmentKey);
 
-        return Results.Ok(new FeatureStateResponse(featureName, featureState.isActive));
+        return featureState.wasFound ? Results.Ok(new FeatureStateResponse(featureName, featureState.isActive)) : Results.NotFound("Feature not found");
     }
 
     public async Task<IResult> ToggleFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
@@ -18,14 +18,14 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         var isAdmin = await repository.IsAdminAsync(authKey);
         var isFeatureAdmin = await repository.IsFeatureAdminAsync(featureKey, authKey);
         var isEnvironmentAdmin = await repository.IsEnvironmentAdminAsync(environmentKey, authKey);
-        
+
         if (!isAdmin || !isFeatureAdmin || !isEnvironmentAdmin)
         {
             return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
         }
-        
+
         var result = await repository.ToggleFeatureAsync(featureKey, environmentKey, authKey);
-        
+
         return Results.Ok(new ToggleFeatureResponse(featureKey.ToString(), result.isActive, result.wasChanged, result.reason));
     }
 
@@ -36,25 +36,25 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         {
             return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
         }
-        
+
         var result = await repository.AddFeatureAsync(featureName, description, authKey);
-        
+
         return result.wasAdded ? Results.Ok(new AddResponse(featureName, result.key, result.wasAdded, result.reason)) : Results.BadRequest(result.reason);
     }
-    
+
     public async Task<IResult> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
     {
         var isAdmin = await repository.IsAdminAsync(authKey);
         var isFeatureAdmin = await repository.IsFeatureAdminAsync(featureKey, authKey);
         var isEnvironmentAdmin = await repository.IsEnvironmentAdminAsync(environmentKey, authKey);
-        
+
         if (!isAdmin || !isFeatureAdmin || !isEnvironmentAdmin)
         {
             return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
         }
-        
+
         var result = await repository.AddEnvironmentToFeatureAsync(featureKey, environmentKey);
-        
+
         return result.wasAdded ? Results.Ok() : Results.BadRequest(result.reason);
     }
 
@@ -62,30 +62,30 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
     {
         var isAdmin = await repository.IsAdminAsync(authKey);
         var isFeatureAdmin = await repository.IsFeatureAdminAsync(featureKey, authKey);
-        
+
         if (!isAdmin || !isFeatureAdmin)
         {
             return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
         }
-        
+
         var result = await repository.DeleteFeatureAsync(featureKey);
-        
+
         return result.deleted ? Results.Ok() : Results.BadRequest(result.reason);
     }
-    
+
     public async Task<IResult> DeleteEnvironmentFromFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
     {
         var isAdmin = await repository.IsAdminAsync(authKey);
         var isFeatureAdmin = await repository.IsFeatureAdminAsync(featureKey, authKey);
         var isEnvironmentAdmin = await repository.IsEnvironmentAdminAsync(environmentKey, authKey);
-        
+
         if (!isAdmin || !isFeatureAdmin || !isEnvironmentAdmin)
         {
             return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
         }
-        
+
         var result = await repository.DeleteEnvironmentFromFeatureAsync(featureKey, environmentKey);
-        
+
         return result.deleted ? Results.Ok() : Results.BadRequest(result.reason);
     }
 
@@ -96,9 +96,9 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         {
             return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
         }
-        
+
         var result = await repository.AddEnvironmentAsync(environmentName, authKey);
-        
+
         return result.wasAdded ? Results.Ok(new AddResponse(environmentName, result.key, result.wasAdded, result.reason)) : Results.BadRequest(result.reason);
     }
 
@@ -109,9 +109,9 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         {
             return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
         }
-        
+
         var result = await repository.GetEnvironmentsAsync(authKey);
-        
+
         return result.wasFound ? Results.Ok(result.environments) : Results.BadRequest(result.reason);
     }
 
@@ -122,9 +122,9 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         {
             return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
         }
-        
+
         var result = await repository.GetFeaturesAsync(authKey);
-        
+
         return result.wasFound ? Results.Ok(result.features) : Results.BadRequest(result.reason);
     }
 }

@@ -30,17 +30,27 @@ app.UseHttpsRedirection();
 
 app.VerifyDatabase(app.Services.GetRequiredService<IDbConnection>());
 
-app.MapGet("/environments/{authKey}", async (Guid authKey, IFeatureProvider provider) => await provider.GetEnvironmentsAsync(authKey))
-    .WithName("GetEnvironments").WithOpenApi().Produces<List<Environment>>().Produces((int)HttpStatusCode.BadRequest, typeof(string)).Produces((int)HttpStatusCode.Forbidden);
+app.MapGet(
+        "/environments/{authKey}",
+        async (Guid authKey, IFeatureProvider provider) => await provider.GetEnvironmentsAsync(authKey))
+    .WithName("GetEnvironments").WithOpenApi()
+    .Produces<List<Environment>>().Produces((int)HttpStatusCode.BadRequest, typeof(string)).Produces((int)HttpStatusCode.Forbidden);
 
-app.MapPost("/environment/{authKey}", async (Guid authKey, string environmentName, IFeatureProvider provider) => await provider.AddEnvironmentAsync(environmentName, authKey))
+app.MapPost(
+        "/environment/{authKey}",
+        async (Guid authKey, string environmentName, IFeatureProvider provider) => await provider.AddEnvironmentAsync(environmentName, authKey))
     .WithName("AddEnvironment").WithOpenApi().Produces<AddResponse>().Produces((int)HttpStatusCode.BadRequest, typeof(string)).Produces((int)HttpStatusCode.Forbidden);
 
-app.MapGet("/features/{authKey}", async (Guid authKey, IFeatureProvider provider) => await provider.GetFeaturesAsync(authKey))
+app.MapGet(
+        "/features/{authKey}",
+        async (Guid authKey, IFeatureProvider provider) => await provider.GetFeaturesAsync(authKey))
     .WithName("GetFeatures").WithOpenApi().Produces<List<Feature>>().Produces((int)HttpStatusCode.BadRequest, typeof(string)).Produces((int)HttpStatusCode.Forbidden);
 
-app.MapGet("/feature/{featureName}/environment/{environmentKey}", async (Guid environmentKey, string featureName, IFeatureProvider provider) => await provider.GetFeatureStateAsync(featureName, environmentKey))
-    .WithName("GetFeature").WithOpenApi().Produces<FeatureStateResponse>();
+app.MapGet(
+        "/feature/{featureName}/environment/{environmentKey}",
+        async (Guid environmentKey, string featureName, IFeatureProvider provider) => await provider.GetFeatureStateAsync(featureName, environmentKey))
+    .WithName("GetFeature").WithOpenApi()
+    .Produces<FeatureStateResponse>().Produces((int)HttpStatusCode.NotFound, typeof(string));
 
 app.MapPut(
         "/feature/{featureKey}/environment/{environmentKey}/{authKey}",
