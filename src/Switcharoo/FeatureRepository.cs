@@ -1,6 +1,5 @@
 using System.Data;
 using Dapper;
-using Switcharoo.Entities;
 using Switcharoo.Interfaces;
 using Switcharoo.Model;
 using Environment = Switcharoo.Model.Environment;

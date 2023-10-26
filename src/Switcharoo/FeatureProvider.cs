@@ -1,130 +1,75 @@
-using Microsoft.AspNetCore.Authentication;
 using Switcharoo.Interfaces;
 using Switcharoo.Model;
+using Environment = Switcharoo.Model.Environment;
 
 namespace Switcharoo;
 
 public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
 {
-    public async Task<IResult> GetFeatureStateAsync(string featureName, Guid environmentKey)
+    public async Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureName, Guid environmentKey)
     {
-        var featureState = await repository.GetFeatureStateAsync(featureName, environmentKey);
-
-        return featureState.wasFound ? Results.Ok(new FeatureStateResponse(featureName, featureState.isActive)) : Results.NotFound("Feature not found");
+        return await repository.GetFeatureStateAsync(featureName, environmentKey);
     }
 
-    public async Task<IResult> ToggleFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
+    public async Task<(bool isActive, bool wasChanged, string reason)> ToggleFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
+    {
+        return await repository.ToggleFeatureAsync(featureKey, environmentKey, authKey);
+    }
+
+    public async Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(string featureName, string description, Guid authKey)
+    {
+        return await repository.AddFeatureAsync(featureName, description, authKey);
+    }
+
+    public async Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey)
+    {
+        return await repository.AddEnvironmentToFeatureAsync(featureKey, environmentKey);
+    }
+
+    public async Task<(bool deleted, string reason)> DeleteFeatureAsync(Guid featureKey)
+    {
+       return await repository.DeleteFeatureAsync(featureKey);
+    }
+
+    public async Task<(bool deleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureKey, Guid environmentKey)
+    {
+        return await repository.DeleteEnvironmentFromFeatureAsync(featureKey, environmentKey);
+    }
+
+    public async Task<(bool wasAdded, Guid key, string reason)> AddEnvironmentAsync(string environmentName, Guid authKey)
+    {
+        return await repository.AddEnvironmentAsync(environmentName, authKey);
+    }
+
+    public async Task<(bool wasFound, List<Environment> environments, string reason)> GetEnvironmentsAsync(Guid authKey)
+    {
+        return await repository.GetEnvironmentsAsync(authKey);
+    }
+
+    public async Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid authKey)
+    {
+        return await repository.GetFeaturesAsync(authKey);
+    }
+
+    public async Task<bool> IsAdminAsync(Guid authKey)
+    {
+        return await repository.IsAdminAsync(authKey);
+    }
+
+    public async Task<bool> IsAdminAsync(Guid authKey, Guid environmentKey, Guid featureKey)
     {
         var isAdmin = await repository.IsAdminAsync(authKey);
         var isFeatureAdmin = await repository.IsFeatureAdminAsync(featureKey, authKey);
         var isEnvironmentAdmin = await repository.IsEnvironmentAdminAsync(environmentKey, authKey);
 
-        if (!isAdmin || !isFeatureAdmin || !isEnvironmentAdmin)
-        {
-            return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
-        }
-
-        var result = await repository.ToggleFeatureAsync(featureKey, environmentKey, authKey);
-
-        return Results.Ok(new ToggleFeatureResponse(featureKey.ToString(), result.isActive, result.wasChanged, result.reason));
+        return isAdmin && isFeatureAdmin && isEnvironmentAdmin;
     }
 
-    public async Task<IResult> AddFeatureAsync(string featureName, string description, Guid authKey)
-    {
-        var isAdmin = await repository.IsAdminAsync(authKey);
-        if (!isAdmin)
-        {
-            return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
-        }
-
-        var result = await repository.AddFeatureAsync(featureName, description, authKey);
-
-        return result.wasAdded ? Results.Ok(new AddResponse(featureName, result.key, result.wasAdded, result.reason)) : Results.BadRequest(result.reason);
-    }
-
-    public async Task<IResult> AddEnvironmentToFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
+    public async Task<bool> IsFeatureAdminAsync(Guid authKey, Guid featureKey)
     {
         var isAdmin = await repository.IsAdminAsync(authKey);
         var isFeatureAdmin = await repository.IsFeatureAdminAsync(featureKey, authKey);
-        var isEnvironmentAdmin = await repository.IsEnvironmentAdminAsync(environmentKey, authKey);
-
-        if (!isAdmin || !isFeatureAdmin || !isEnvironmentAdmin)
-        {
-            return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
-        }
-
-        var result = await repository.AddEnvironmentToFeatureAsync(featureKey, environmentKey);
-
-        return result.wasAdded ? Results.Ok() : Results.BadRequest(result.reason);
-    }
-
-    public async Task<IResult> DeleteFeatureAsync(Guid featureKey, Guid authKey)
-    {
-        var isAdmin = await repository.IsAdminAsync(authKey);
-        var isFeatureAdmin = await repository.IsFeatureAdminAsync(featureKey, authKey);
-
-        if (!isAdmin || !isFeatureAdmin)
-        {
-            return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
-        }
-
-        var result = await repository.DeleteFeatureAsync(featureKey);
-
-        return result.deleted ? Results.Ok() : Results.BadRequest(result.reason);
-    }
-
-    public async Task<IResult> DeleteEnvironmentFromFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
-    {
-        var isAdmin = await repository.IsAdminAsync(authKey);
-        var isFeatureAdmin = await repository.IsFeatureAdminAsync(featureKey, authKey);
-        var isEnvironmentAdmin = await repository.IsEnvironmentAdminAsync(environmentKey, authKey);
-
-        if (!isAdmin || !isFeatureAdmin || !isEnvironmentAdmin)
-        {
-            return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
-        }
-
-        var result = await repository.DeleteEnvironmentFromFeatureAsync(featureKey, environmentKey);
-
-        return result.deleted ? Results.Ok() : Results.BadRequest(result.reason);
-    }
-
-    public async Task<IResult> AddEnvironmentAsync(string environmentName, Guid authKey)
-    {
-        var isAdmin = await repository.IsAdminAsync(authKey);
-        if (!isAdmin)
-        {
-            return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
-        }
-
-        var result = await repository.AddEnvironmentAsync(environmentName, authKey);
-
-        return result.wasAdded ? Results.Ok(new AddResponse(environmentName, result.key, result.wasAdded, result.reason)) : Results.BadRequest(result.reason);
-    }
-
-    public async Task<IResult> GetEnvironmentsAsync(Guid authKey)
-    {
-        var isAdmin = await repository.IsAdminAsync(authKey);
-        if (!isAdmin)
-        {
-            return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
-        }
-
-        var result = await repository.GetEnvironmentsAsync(authKey);
-
-        return result.wasFound ? Results.Ok(result.environments) : Results.BadRequest(result.reason);
-    }
-
-    public async Task<IResult> GetFeaturesAsync(Guid authKey)
-    {
-        var isAdmin = await repository.IsAdminAsync(authKey);
-        if (!isAdmin)
-        {
-            return Results.Forbid(new AuthenticationProperties(), new[] { "Not authorized" });
-        }
-
-        var result = await repository.GetFeaturesAsync(authKey);
-
-        return result.wasFound ? Results.Ok(result.features) : Results.BadRequest(result.reason);
+        
+        return isAdmin && isFeatureAdmin;
     }
 }

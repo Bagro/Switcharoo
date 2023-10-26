@@ -1,4 +1,3 @@
-using Switcharoo.Entities;
 using Switcharoo.Model;
 using Environment = Switcharoo.Model.Environment;
 
