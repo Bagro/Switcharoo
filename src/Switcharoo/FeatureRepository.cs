@@ -21,7 +21,7 @@ public sealed class FeatureRepository : IRepository
 
         var active = await _dbConnection.QuerySingleOrDefaultAsync<bool?>(query, new { FeatureName = featureName, EnvironmentKey = environmentKey.ToString().ToUpperInvariant() });
 
-        return (active ?? false, active ?? false);
+        return (active ?? false, active != null);
     }
 
     public async Task<(bool isActive, bool wasChanged, string reason)> ToggleFeatureAsync(Guid featureKey, Guid environmentKey, Guid authKey)
