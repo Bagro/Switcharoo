@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Switcharoo.Interfaces;
 using Environment = Switcharoo.Model.Environment;
 
@@ -10,9 +9,9 @@ namespace Switcharoo.Controllers;
 public class EnvironmentsController(IFeatureProvider featureProvider) : ControllerBase
 {
     [HttpGet("{authKey}")]
-    [ProducesResponseType(typeof(List<Environment>), (int)HttpStatusCode.OK)]
-    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+    [ProducesResponseType<List<Environment>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetEnvironmentsAsync(Guid authKey)
     {
         var isAdmin = await featureProvider.IsAdminAsync(authKey);

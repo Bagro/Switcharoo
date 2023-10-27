@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Switcharoo.Interfaces;
 using Switcharoo.Model;
 
@@ -12,9 +11,9 @@ public sealed record AddEnvironmentRequest(string Name, Guid AuthKey);
 public class EnvironmentController(IFeatureProvider featureProvider) : ControllerBase
 {
     [HttpPost()]
-    [ProducesResponseType(typeof(AddResponse), (int)HttpStatusCode.OK)]
-    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+    [ProducesResponseType<AddResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddEnvironmentAsync([FromBody] AddEnvironmentRequest request)
     {
         var isAdmin = await featureProvider.IsAdminAsync(request.AuthKey);
