@@ -1,10 +1,7 @@
 ﻿using FluentAssertions;
-using Microsoft.AspNetCore.Http.HttpResults;
 using NSubstitute;
 using Switcharoo.Interfaces;
-using Switcharoo.Model;
 using Xunit;
-using Environment = Switcharoo.Model.Environment;
 
 namespace Switcharoo.Tests;
 

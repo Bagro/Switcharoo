@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Switcharoo.Interfaces;
 using Switcharoo.Model;
 
@@ -16,8 +15,8 @@ public sealed record DeleteEnvironmentFromFeatureRequest(Guid FeatureKey, Guid E
 public sealed class FeatureController(IFeatureProvider featureProvider) : ControllerBase
 {
     [HttpGet("{featureName}/environment/{environmentKey}")]
-    [ProducesResponseType(typeof(FeatureStateResponse), (int)HttpStatusCode.OK)]
-    [ProducesResponseType((int)HttpStatusCode.NotFound)]
+    [ProducesResponseType<FeatureStateResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetFeatureAsync(string featureName, Guid environmentKey)
     {
         var result = await featureProvider.GetFeatureStateAsync(featureName, environmentKey);
@@ -26,8 +25,8 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     }
     
     [HttpPut()]
-    [ProducesResponseType(typeof(ToggleFeatureResponse), (int)HttpStatusCode.OK)]
-    [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+    [ProducesResponseType<ToggleFeatureResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ToggleFeature([FromBody] ToggleFeatureRequest request)
     {
         var isAdmin = await featureProvider.IsAdminAsync(request.AuthKey, request.EnvironmentKey, request.FeatureKey);
@@ -42,9 +41,9 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     }
     
     [HttpPost()]
-    [ProducesResponseType(typeof(AddResponse), (int)HttpStatusCode.OK)]
-    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+    [ProducesResponseType<AddResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddFeatureAsync([FromBody] AddFeatureRequest request)
     {
         var isAdmin = await featureProvider.IsAdminAsync(request.AuthKey);
@@ -59,9 +58,9 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     }
     
     [HttpPost("environment")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddEnvironmentToFeatureAsync([FromBody] AddEnvironmentToFeatureRequest request)
     {
         var isAdmin = await featureProvider.IsAdminAsync(request.AuthKey);
@@ -77,9 +76,9 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     }
     
     [HttpDelete("")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteFeatureAsync([FromBody] DeleteFeatureRequest request)
     {
         var isAdmin = await featureProvider.IsFeatureAdminAsync(request.AuthKey, request.FeatureKey);
@@ -95,9 +94,9 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     }
     
     [HttpDelete("environment")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteEnvironmentFromFeatureAsync([FromBody] DeleteEnvironmentFromFeatureRequest request)
     {
         var isAdmin = await featureProvider.IsAdminAsync(request.AuthKey, request.EnvironmentKey, request.FeatureKey);

@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Switcharoo.Interfaces;
 using Switcharoo.Model;
 
@@ -10,9 +9,9 @@ namespace Switcharoo.Controllers;
 public class FeaturesController(IFeatureProvider featureProvider) : ControllerBase
 {
     [HttpGet("{authKey}")]
-    [ProducesResponseType(typeof(List<Feature>), (int)HttpStatusCode.OK)]
-    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+    [ProducesResponseType<List<Feature>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetFeaturesAsync(Guid authKey)
     {
         var isAdmin = await featureProvider.IsAdminAsync(authKey);
