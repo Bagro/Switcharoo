@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Switcharoo.Extensions;
 using Switcharoo.Interfaces;
 using Environment = Switcharoo.Entities.Environment;
 
@@ -14,9 +15,9 @@ public class EnvironmentsController(IFeatureProvider featureProvider) : Controll
     [ProducesResponseType<List<Environment>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetEnvironmentsAsync(Guid authKey)
+    public async Task<IActionResult> GetEnvironmentsAsync()
     {
-        var result = await featureProvider.GetEnvironmentsAsync(authKey);
+        var result = await featureProvider.GetEnvironmentsAsync(User.GetUserId());
 
         return result.wasFound ? Ok(result.environments) : BadRequest(result.reason);
     }

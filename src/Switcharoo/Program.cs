@@ -16,7 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(x => x.UseSqlite(builder.Configurati
 
 builder.Services.AddIdentityCore<User>()
     .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
+    .AddApiEndpoints();
 
 builder.Services.AddScoped<IFeatureProvider, FeatureProvider>();
 builder.Services.AddScoped<IRepository, FeatureRepository>();

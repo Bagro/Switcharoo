@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Switcharoo.Extensions;
 using Switcharoo.Interfaces;
 using Switcharoo.Model;
 
 namespace Switcharoo.Controllers;
 
-public sealed record AddEnvironmentRequest(string Name, Guid AuthKey);
+public sealed record AddEnvironmentRequest(string Name);
 
 [ApiController]
 [Authorize]
@@ -18,7 +19,7 @@ public class EnvironmentController(IFeatureProvider featureProvider) : Controlle
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddEnvironmentAsync([FromBody] AddEnvironmentRequest request)
     {
-        var result = await featureProvider.AddEnvironmentAsync(request.Name, request.AuthKey);
+        var result = await featureProvider.AddEnvironmentAsync(request.Name, User.GetUserId());
 
         return result.wasAdded ? Ok(new AddResponse(request.Name, result.key)) : BadRequest(result.reason);
     }

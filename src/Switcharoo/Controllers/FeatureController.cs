@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Switcharoo.Extensions;
 using Switcharoo.Interfaces;
 using Switcharoo.Model;
 
 namespace Switcharoo.Controllers;
 
-public sealed record ToggleFeatureRequest(Guid FeatureKey, Guid EnvironmentKey, Guid AuthKey);
-public sealed record AddFeatureRequest(string Name, string Description, Guid AuthKey);
-public sealed record AddEnvironmentToFeatureRequest(Guid FeatureKey, Guid EnvironmentKey, Guid AuthKey);
-public sealed record DeleteFeatureRequest(Guid FeatureKey, Guid AuthKey);
-public sealed record DeleteEnvironmentFromFeatureRequest(Guid FeatureKey, Guid EnvironmentKey, Guid AuthKey);
+public sealed record ToggleFeatureRequest(Guid FeatureKey, Guid EnvironmentKey);
+public sealed record AddFeatureRequest(string Name, string Description);
+public sealed record AddEnvironmentToFeatureRequest(Guid FeatureKey, Guid EnvironmentKey);
+public sealed record DeleteFeatureRequest(Guid FeatureKey);
+public sealed record DeleteEnvironmentFromFeatureRequest(Guid FeatureKey, Guid EnvironmentKey);
 
 [ApiController]
 [Authorize]
@@ -32,7 +33,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ToggleFeature([FromBody] ToggleFeatureRequest request)
     {
-        var result = await featureProvider.ToggleFeatureAsync(request.FeatureKey, request.EnvironmentKey, request.AuthKey);
+        var result = await featureProvider.ToggleFeatureAsync(request.FeatureKey, request.EnvironmentKey, User.GetUserId());
         
         return result.wasChanged ? Ok(new ToggleFeatureResponse(request.FeatureKey.ToString(), result.isActive, result.wasChanged, result.reason)) : Forbid();
     }
@@ -43,7 +44,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddFeatureAsync([FromBody] AddFeatureRequest request)
     {
-        var result = await featureProvider.AddFeatureAsync(request.Name, request.Description, request.AuthKey);
+        var result = await featureProvider.AddFeatureAsync(request.Name, request.Description, User.GetUserId());
 
         return result.wasAdded ? Ok(new AddResponse(request.Name, result.key)) : BadRequest(result.reason);
     }
