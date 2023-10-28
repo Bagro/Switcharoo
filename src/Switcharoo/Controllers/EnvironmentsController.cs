@@ -11,7 +11,7 @@ namespace Switcharoo.Controllers;
 [Route("[controller]")]
 public class EnvironmentsController(IFeatureProvider featureProvider) : ControllerBase
 {
-    [HttpGet("{authKey}")]
+    [HttpGet()]
     [ProducesResponseType<List<Environment>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
