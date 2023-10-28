@@ -55,7 +55,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddEnvironmentToFeatureAsync([FromBody] AddEnvironmentToFeatureRequest request)
     {
-        var result = await featureProvider.AddEnvironmentToFeatureAsync(request.FeatureKey, request.EnvironmentKey);
+        var result = await featureProvider.AddEnvironmentToFeatureAsync(request.FeatureKey, request.EnvironmentKey, User.GetUserId());
 
         return result.wasAdded ? Ok() : BadRequest(result.reason);
     }
@@ -66,7 +66,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteFeatureAsync([FromBody] DeleteFeatureRequest request)
     {
-        var result = await featureProvider.DeleteFeatureAsync(request.FeatureKey);
+        var result = await featureProvider.DeleteFeatureAsync(request.FeatureKey, User.GetUserId());
 
         return result.deleted ? Ok() : BadRequest(result.reason);
     }
@@ -77,7 +77,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteEnvironmentFromFeatureAsync([FromBody] DeleteEnvironmentFromFeatureRequest request)
     {
-        var result = await featureProvider.DeleteEnvironmentFromFeatureAsync(request.FeatureKey, request.EnvironmentKey);
+        var result = await featureProvider.DeleteEnvironmentFromFeatureAsync(request.FeatureKey, request.EnvironmentKey, User.GetUserId());
 
         return result.deleted ? Ok() : BadRequest(result.reason);
     }
