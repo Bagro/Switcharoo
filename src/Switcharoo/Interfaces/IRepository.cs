@@ -1,5 +1,5 @@
-using Switcharoo.Model;
-using Environment = Switcharoo.Model.Environment;
+using Switcharoo.Entities;
+using Environment = Switcharoo.Entities.Environment;
 
 namespace Switcharoo.Interfaces;
 
@@ -22,10 +22,4 @@ public interface IRepository
     Task<(bool wasFound, List<Environment> environments, string reason)> GetEnvironmentsAsync(Guid authKey);
     
     Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid authKey);
-
-    Task<bool> IsAdminAsync(Guid authKey);
-
-    Task<bool> IsFeatureAdminAsync(Guid featureKey, Guid authKey);
-
-    Task<bool> IsEnvironmentAdminAsync(Guid environmentKey, Guid authKey);
 }

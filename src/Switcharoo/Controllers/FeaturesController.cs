@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Switcharoo.Entities;
 using Switcharoo.Interfaces;
-using Switcharoo.Model;
 
 namespace Switcharoo.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("[controller]")]
 public class FeaturesController(IFeatureProvider featureProvider) : ControllerBase
 {
@@ -14,12 +16,6 @@ public class FeaturesController(IFeatureProvider featureProvider) : ControllerBa
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetFeaturesAsync(Guid authKey)
     {
-        var isAdmin = await featureProvider.IsAdminAsync(authKey);
-        if (!isAdmin)
-        {
-            return Forbid();
-        }
-
         var result = await featureProvider.GetFeaturesAsync(authKey);
 
         return result.wasFound ? Ok(result.features) : BadRequest(result.reason);

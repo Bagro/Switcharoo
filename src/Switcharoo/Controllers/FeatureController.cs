@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Switcharoo.Interfaces;
 using Switcharoo.Model;
 
@@ -11,10 +12,12 @@ public sealed record DeleteFeatureRequest(Guid FeatureKey, Guid AuthKey);
 public sealed record DeleteEnvironmentFromFeatureRequest(Guid FeatureKey, Guid EnvironmentKey, Guid AuthKey);
 
 [ApiController]
+[Authorize]
 [Route("[controller]")]
 public sealed class FeatureController(IFeatureProvider featureProvider) : ControllerBase
 {
     [HttpGet("{featureName}/environment/{environmentKey}")]
+    [AllowAnonymous]
     [ProducesResponseType<FeatureStateResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetFeatureAsync(string featureName, Guid environmentKey)
@@ -29,12 +32,6 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ToggleFeature([FromBody] ToggleFeatureRequest request)
     {
-        var isAdmin = await featureProvider.IsAdminAsync(request.AuthKey, request.EnvironmentKey, request.FeatureKey);
-        if (!isAdmin)
-        {
-            return Forbid();
-        }
-        
         var result = await featureProvider.ToggleFeatureAsync(request.FeatureKey, request.EnvironmentKey, request.AuthKey);
         
         return result.wasChanged ? Ok(new ToggleFeatureResponse(request.FeatureKey.ToString(), result.isActive, result.wasChanged, result.reason)) : Forbid();
@@ -46,12 +43,6 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddFeatureAsync([FromBody] AddFeatureRequest request)
     {
-        var isAdmin = await featureProvider.IsAdminAsync(request.AuthKey);
-        if (!isAdmin)
-        {
-            return Forbid();
-        }
-
         var result = await featureProvider.AddFeatureAsync(request.Name, request.Description, request.AuthKey);
 
         return result.wasAdded ? Ok(new AddResponse(request.Name, result.key)) : BadRequest(result.reason);
@@ -63,13 +54,6 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddEnvironmentToFeatureAsync([FromBody] AddEnvironmentToFeatureRequest request)
     {
-        var isAdmin = await featureProvider.IsAdminAsync(request.AuthKey);
-     
-        if (!isAdmin)
-        {
-            return Forbid();
-        }
-
         var result = await featureProvider.AddEnvironmentToFeatureAsync(request.FeatureKey, request.EnvironmentKey);
 
         return result.wasAdded ? Ok() : BadRequest(result.reason);
@@ -81,13 +65,6 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteFeatureAsync([FromBody] DeleteFeatureRequest request)
     {
-        var isAdmin = await featureProvider.IsFeatureAdminAsync(request.AuthKey, request.FeatureKey);
-     
-        if (!isAdmin)
-        {
-            return Forbid();
-        }
-
         var result = await featureProvider.DeleteFeatureAsync(request.FeatureKey);
 
         return result.deleted ? Ok() : BadRequest(result.reason);
@@ -99,13 +76,6 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteEnvironmentFromFeatureAsync([FromBody] DeleteEnvironmentFromFeatureRequest request)
     {
-        var isAdmin = await featureProvider.IsAdminAsync(request.AuthKey, request.EnvironmentKey, request.FeatureKey);
-     
-        if (!isAdmin)
-        {
-            return Forbid();
-        }
-
         var result = await featureProvider.DeleteEnvironmentFromFeatureAsync(request.FeatureKey, request.EnvironmentKey);
 
         return result.deleted ? Ok() : BadRequest(result.reason);

@@ -1,6 +1,6 @@
+using Switcharoo.Entities;
 using Switcharoo.Interfaces;
-using Switcharoo.Model;
-using Environment = Switcharoo.Model.Environment;
+using Environment = Switcharoo.Entities.Environment;
 
 namespace Switcharoo;
 
@@ -49,27 +49,5 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
     public async Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid authKey)
     {
         return await repository.GetFeaturesAsync(authKey);
-    }
-
-    public async Task<bool> IsAdminAsync(Guid authKey)
-    {
-        return await repository.IsAdminAsync(authKey);
-    }
-
-    public async Task<bool> IsAdminAsync(Guid authKey, Guid environmentKey, Guid featureKey)
-    {
-        var isAdmin = await repository.IsAdminAsync(authKey);
-        var isFeatureAdmin = await repository.IsFeatureAdminAsync(featureKey, authKey);
-        var isEnvironmentAdmin = await repository.IsEnvironmentAdminAsync(environmentKey, authKey);
-
-        return isAdmin && isFeatureAdmin && isEnvironmentAdmin;
-    }
-
-    public async Task<bool> IsFeatureAdminAsync(Guid authKey, Guid featureKey)
-    {
-        var isAdmin = await repository.IsAdminAsync(authKey);
-        var isFeatureAdmin = await repository.IsFeatureAdminAsync(featureKey, authKey);
-        
-        return isAdmin && isFeatureAdmin;
     }
 }

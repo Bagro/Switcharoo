@@ -1,11 +1,23 @@
 using System.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Switcharoo;
+using Switcharoo.Database;
+using Switcharoo.Entities;
 using Switcharoo.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddTransient<IDbConnection>(_ => new SqliteConnection(builder.Configuration.GetConnectionString("SwitcharooDb")));
+builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
+builder.Services.AddAuthorizationBuilder();
+
+builder.Services.AddDbContext<AppDbContext>(x => x.UseSqlite(builder.Configuration.GetConnectionString("SwitcharooDb")));
+
+builder.Services.AddIdentityCore<User>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
 builder.Services.AddScoped<IFeatureProvider, FeatureProvider>();
 builder.Services.AddScoped<IRepository, FeatureRepository>();
 
@@ -30,8 +42,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.VerifyDatabase(app.Services.GetRequiredService<IDbConnection>());
+app.MapIdentityApi<User>();
 
 app.MapControllers();
 
