@@ -11,14 +11,14 @@ namespace Switcharoo.Controllers;
 [Route("[controller]")]
 public class FeaturesController(IFeatureProvider featureProvider) : ControllerBase
 {
-    [HttpGet("{authKey}")]
+    [HttpGet("")]
     [ProducesResponseType<List<Feature>>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetFeaturesAsync()
     {
         var result = await featureProvider.GetFeaturesAsync(User.GetUserId());
 
-        return result.wasFound ? Ok(result.features) : BadRequest(result.reason);
+        return result.wasFound ? Ok(result.features) : NotFound(result.reason);
     }
 }

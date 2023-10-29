@@ -208,7 +208,7 @@ namespace Switcharoo.Database.Migrations
 
                     b.HasIndex("FeatureId");
 
-                    b.ToTable("FeatureEnvironment");
+                    b.ToTable("FeatureEnvironments");
                 });
 
             modelBuilder.Entity("Switcharoo.Entities.User", b =>

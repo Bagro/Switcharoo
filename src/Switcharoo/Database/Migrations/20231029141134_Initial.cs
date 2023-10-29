@@ -196,7 +196,7 @@ namespace Switcharoo.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "FeatureEnvironment",
+                name: "FeatureEnvironments",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -206,15 +206,15 @@ namespace Switcharoo.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FeatureEnvironment", x => x.Id);
+                    table.PrimaryKey("PK_FeatureEnvironments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_FeatureEnvironment_Environments_EnvironmentId",
+                        name: "FK_FeatureEnvironments_Environments_EnvironmentId",
                         column: x => x.EnvironmentId,
                         principalTable: "Environments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_FeatureEnvironment_Features_FeatureId",
+                        name: "FK_FeatureEnvironments_Features_FeatureId",
                         column: x => x.FeatureId,
                         principalTable: "Features",
                         principalColumn: "Id",
@@ -264,13 +264,13 @@ namespace Switcharoo.Database.Migrations
                 column: "OwnerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FeatureEnvironment_EnvironmentId",
-                table: "FeatureEnvironment",
+                name: "IX_FeatureEnvironments_EnvironmentId",
+                table: "FeatureEnvironments",
                 column: "EnvironmentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FeatureEnvironment_FeatureId",
-                table: "FeatureEnvironment",
+                name: "IX_FeatureEnvironments_FeatureId",
+                table: "FeatureEnvironments",
                 column: "FeatureId");
 
             migrationBuilder.CreateIndex(
@@ -298,7 +298,7 @@ namespace Switcharoo.Database.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "FeatureEnvironment");
+                name: "FeatureEnvironments");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

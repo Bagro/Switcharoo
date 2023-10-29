@@ -1,6 +1,6 @@
-using Switcharoo.Entities;
 using Switcharoo.Interfaces;
-using Environment = Switcharoo.Entities.Environment;
+using Switcharoo.Model;
+using Environment = Switcharoo.Model.Environment;
 
 namespace Switcharoo;
 
@@ -28,7 +28,7 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
 
     public async Task<(bool deleted, string reason)> DeleteFeatureAsync(Guid featureId, Guid userId)
     {
-       return await repository.DeleteFeatureAsync(featureId, userId);
+        return await repository.DeleteFeatureAsync(featureId, userId);
     }
 
     public async Task<(bool deleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
@@ -43,11 +43,28 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
 
     public async Task<(bool wasFound, List<Environment> environments, string reason)> GetEnvironmentsAsync(Guid userId)
     {
-        return await repository.GetEnvironmentsAsync(userId);
+        var result = await repository.GetEnvironmentsAsync(userId);
+
+        var environments = result.environments.Select(x => new Environment { Id = x.Id, Name = x.Name }).ToList();
+
+        return (result.wasFound, environments, result.reason);
     }
 
     public async Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid userId)
     {
-        return await repository.GetFeaturesAsync(userId);
+        var result = await repository.GetFeaturesAsync(userId);
+
+        // Map the entities to the model including the environments
+        var features = result.features.Select(
+            x => new Feature
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Description = x.Description,
+                Environments = x.Environments.Select(
+                    y => new FeatureEnvironment { IsEnabled = y.IsEnabled, EnvironmentId = y.Environment.Id, EnvironmentName = y.Environment.Name }).ToList(),
+            }).ToList();
+
+        return (result.wasFound, features, result.reason);
     }
 }

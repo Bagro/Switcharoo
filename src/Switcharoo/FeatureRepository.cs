@@ -59,22 +59,25 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
 
     public async Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
     {
-        var feature = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).SingleOrDefaultAsync(x => x.Id == featureId && x.Owner.Id == userId);
-        var environment = await context.Environments.SingleOrDefaultAsync(x => x.Id == environmentId);
+        var featureExist = context.Features.SingleOrDefaultAsync(x => x.Id == featureId && x.Owner.Id == userId);
+        var environmentExist = context.Environments.SingleOrDefaultAsync(x => x.Id == environmentId && x.Owner.Id == userId);
+        var featureEnvironmentExist = context.FeatureEnvironments.AnyAsync(x => x.Feature.Id == featureId && x.Environment.Id == environmentId);
+        
 
-        if (feature == null || environment == null)
+        Task.WaitAll(featureExist, environmentExist, featureEnvironmentExist);
+        if (featureExist.Result == null || environmentExist.Result == null)
         {
             return (false, "Feature or environment not found");
         }
-
-        if (feature.Environments.Any(x => x.Environment.Id == environmentId))
+        
+        if (featureEnvironmentExist.Result)
         {
             return (false, "Feature environment already exists");
         }
 
-        var featureEnvironment = new FeatureEnvironment { Id = Guid.NewGuid(), Feature = feature, Environment = environment, IsEnabled = false };
+        var featureEnvironment = new FeatureEnvironment { Id = Guid.NewGuid(), Feature = featureExist.Result, Environment = environmentExist.Result, IsEnabled = false };
 
-        feature.Environments.Add(featureEnvironment);
+        await context.FeatureEnvironments.AddAsync(featureEnvironment);
 
         await context.SaveChangesAsync();
 

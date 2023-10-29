@@ -6,24 +6,24 @@ using Switcharoo.Model;
 
 namespace Switcharoo.Controllers;
 
-public sealed record ToggleFeatureRequest(Guid FeatureKey, Guid EnvironmentKey);
+public sealed record ToggleFeatureRequest(Guid FeatureId, Guid EnvironmentId);
 public sealed record AddFeatureRequest(string Name, string Description);
-public sealed record AddEnvironmentToFeatureRequest(Guid FeatureKey, Guid EnvironmentKey);
-public sealed record DeleteFeatureRequest(Guid FeatureKey);
-public sealed record DeleteEnvironmentFromFeatureRequest(Guid FeatureKey, Guid EnvironmentKey);
+public sealed record AddEnvironmentToFeatureRequest(Guid FeatureId, Guid EnvironmentId);
+public sealed record DeleteFeatureRequest(Guid FeatureId);
+public sealed record DeleteEnvironmentFromFeatureRequest(Guid FeatureId, Guid EnvironmentId);
 
 [ApiController]
 [Authorize]
 [Route("[controller]")]
 public sealed class FeatureController(IFeatureProvider featureProvider) : ControllerBase
 {
-    [HttpGet("{featureName}/environment/{environmentKey}")]
+    [HttpGet("{featureName}/environment/{environmentId}")]
     [AllowAnonymous]
     [ProducesResponseType<FeatureStateResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetFeatureAsync(string featureName, Guid environmentKey)
+    public async Task<IActionResult> GetFeatureAsync(string featureName, Guid environmentId)
     {
-        var result = await featureProvider.GetFeatureStateAsync(featureName, environmentKey);
+        var result = await featureProvider.GetFeatureStateAsync(featureName, environmentId);
         
         return result.wasFound ? Ok(new FeatureStateResponse(featureName, result.isActive)) : NotFound();
     }
@@ -33,9 +33,9 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ToggleFeature([FromBody] ToggleFeatureRequest request)
     {
-        var result = await featureProvider.ToggleFeatureAsync(request.FeatureKey, request.EnvironmentKey, User.GetUserId());
+        var result = await featureProvider.ToggleFeatureAsync(request.FeatureId, request.EnvironmentId, User.GetUserId());
         
-        return result.wasChanged ? Ok(new ToggleFeatureResponse(request.FeatureKey.ToString(), result.isActive, result.wasChanged, result.reason)) : Forbid();
+        return result.wasChanged ? Ok(new ToggleFeatureResponse(request.FeatureId.ToString(), result.isActive, result.wasChanged, result.reason)) : Forbid();
     }
     
     [HttpPost()]
@@ -55,7 +55,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddEnvironmentToFeatureAsync([FromBody] AddEnvironmentToFeatureRequest request)
     {
-        var result = await featureProvider.AddEnvironmentToFeatureAsync(request.FeatureKey, request.EnvironmentKey, User.GetUserId());
+        var result = await featureProvider.AddEnvironmentToFeatureAsync(request.FeatureId, request.EnvironmentId, User.GetUserId());
 
         return result.wasAdded ? Ok() : BadRequest(result.reason);
     }
@@ -66,7 +66,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteFeatureAsync([FromBody] DeleteFeatureRequest request)
     {
-        var result = await featureProvider.DeleteFeatureAsync(request.FeatureKey, User.GetUserId());
+        var result = await featureProvider.DeleteFeatureAsync(request.FeatureId, User.GetUserId());
 
         return result.deleted ? Ok() : BadRequest(result.reason);
     }
@@ -77,7 +77,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteEnvironmentFromFeatureAsync([FromBody] DeleteEnvironmentFromFeatureRequest request)
     {
-        var result = await featureProvider.DeleteEnvironmentFromFeatureAsync(request.FeatureKey, request.EnvironmentKey, User.GetUserId());
+        var result = await featureProvider.DeleteEnvironmentFromFeatureAsync(request.FeatureId, request.EnvironmentId, User.GetUserId());
 
         return result.deleted ? Ok() : BadRequest(result.reason);
     }

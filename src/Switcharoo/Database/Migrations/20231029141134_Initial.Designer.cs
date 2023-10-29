@@ -11,7 +11,7 @@ using Switcharoo.Database;
 namespace Switcharoo.Database.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231028195238_Initial")]
+    [Migration("20231029141134_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -211,7 +211,7 @@ namespace Switcharoo.Database.Migrations
 
                     b.HasIndex("FeatureId");
 
-                    b.ToTable("FeatureEnvironment");
+                    b.ToTable("FeatureEnvironments");
                 });
 
             modelBuilder.Entity("Switcharoo.Entities.User", b =>
