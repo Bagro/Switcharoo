@@ -1,6 +1,4 @@
-using System.Data;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Switcharoo;
 using Switcharoo.Database;
