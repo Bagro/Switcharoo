@@ -1,0 +1,77 @@
+# Register user
+POST {{baseurl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "{{email}}",
+    "password": "{{password}}"
+}
+
+###
+# Login
+POST {{baseurl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "{{email}}",
+    "password": "{{password}}"
+}
+
+###
+# Get features
+GET {{baseurl}}/features
+Authorization: Bearer {{accessToken}}
+
+###
+# Get envitronments
+GET {{baseurl}}/environments
+Authorization: Bearer {{accessToken}}
+
+###
+# Add feature
+POST {{baseurl}}/feature
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "name": "{{featureName}}",
+    "description": "Test feature description" 
+}
+
+###
+# Add environment
+POST {{baseurl}}/environment
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "name": "{{environmentName}}" 
+}
+
+###
+# Add environment to feature (update with valid ids)
+POST {{baseurl}}/feature/environment
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "featureId": "87f93587-1e70-4418-bce0-034ec46a7326",
+    "environmentId": "57d2c086-83fc-495b-bed0-c629fc7eb0b2"
+}
+
+###
+# Toggle feature in environment (update with valid ids)
+PUT {{baseurl}}/feature
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "featureId": "87f93587-1e70-4418-bce0-034ec46a7326",
+    "environmentId": "57d2c086-83fc-495b-bed0-c629fc7eb0b2" 
+}
+
+###
+# Get feature state
+GET {{baseurl}}/feature/{{featurename}}/environment/57d2c086-83fc-495b-bed0-c629fc7eb0b2
+
+###

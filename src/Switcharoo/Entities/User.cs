@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace Switcharoo.Entities;
 
-public sealed record User(int Id, Guid AuthKey, string Name);
+public sealed class User : IdentityUser<Guid>
+{
+}

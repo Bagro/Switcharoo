@@ -1,3 +1,10 @@
-﻿namespace Switcharoo.Model;
+namespace Switcharoo.Model;
 
-public sealed record FeatureEnvironment(Guid EnvironmentKey, string Name, bool IsEnabled);
+public sealed class FeatureEnvironment
+{
+    public bool IsEnabled { get; set; }
+
+    public string EnvironmentName { get; set; }
+
+    public Guid EnvironmentId { get; set; }
+}
