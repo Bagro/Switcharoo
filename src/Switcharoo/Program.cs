@@ -12,6 +12,23 @@ builder.Services.AddAuthorizationBuilder();
 
 builder.Services.AddDbContext<AppDbContext>(x => x.UseSqlite(builder.Configuration.GetConnectionString("SwitcharooDb")));
 
+builder.Services.AddCors(
+    options => options.AddPolicy("CorsPolicy",
+        policyBuilder =>
+        {
+            var corsOrigins = builder.Configuration.GetSection("CorsOrigins").Get<string[]>();
+            if (corsOrigins == null || corsOrigins.Length == 0)
+            {
+                return;
+            }
+            
+            policyBuilder.WithOrigins()
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+                .SetIsOriginAllowedToAllowWildcardSubdomains();
+        }));
+
 builder.Services.AddIdentityCore<User>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddApiEndpoints();
@@ -31,6 +48,7 @@ builder.Services.Configure<RouteOptions>(options =>
 });
 
 var app = builder.Build();
+app.UseCors("CorsPolicy");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
