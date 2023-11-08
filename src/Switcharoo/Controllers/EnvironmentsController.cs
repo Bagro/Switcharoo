@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Switcharoo.Extensions;
 using Switcharoo.Interfaces;
-using Environment = Switcharoo.Entities.Environment;
+using Environment = Switcharoo.Model.Environment;
 
 namespace Switcharoo.Controllers;
 
