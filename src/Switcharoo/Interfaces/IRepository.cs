@@ -22,4 +22,6 @@ public interface IRepository
     Task<(bool wasFound, List<Environment> environments, string reason)> GetEnvironmentsAsync(Guid userId);
     
     Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid userId);
+    
+    Task<(bool wasFound, Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId);
 }

@@ -158,4 +158,11 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
 
         return (features.Count != 0, features, features.Count != 0 ? "Features found" : "No features found");
     }
+
+    public async Task<(bool wasFound, Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId)
+    {
+        var feature = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).SingleOrDefaultAsync(x => x.Id == id && x.Owner.Id == userId);
+        
+        return (feature != null, feature, feature != null ? "Feature found" : "Feature not found");
+    }
 }

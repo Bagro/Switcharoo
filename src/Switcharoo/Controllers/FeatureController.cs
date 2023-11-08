@@ -28,6 +28,17 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
         return result.wasFound ? Ok(new FeatureStateResponse(featureName, result.isActive)) : NotFound();
     }
     
+    [HttpGet("{id}")]
+    [ProducesResponseType<Feature>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetFeatureAsync(Guid id)
+    {
+        var result = await featureProvider.GetFeatureAsync(id, User.GetUserId());
+        
+        return result.wasFound ? Ok(result.feature) : NotFound(result.reason);
+    }
+    
     [HttpPut()]
     [ProducesResponseType<ToggleFeatureResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
