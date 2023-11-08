@@ -88,4 +88,9 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
             
         return (result.wasFound, feature, result.reason);
     }
+
+    public Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Feature feature, Guid userId)
+    {
+        return repository.UpdateFeatureAsync(feature, userId);
+    }
 }

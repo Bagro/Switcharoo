@@ -49,6 +49,17 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
         return result.wasChanged ? Ok(new ToggleFeatureResponse(request.FeatureId.ToString(), result.isActive, result.wasChanged, result.reason)) : Forbid();
     }
     
+    [HttpPut()]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> UpdateFeatureAsync([FromBody] Feature feature)
+    {
+        var result = await featureProvider.UpdateFeatureAsync(feature, User.GetUserId());
+        
+        return result.wasUpdated ? Ok() : BadRequest(result.reason);
+    }
+    
     [HttpPost()]
     [ProducesResponseType<AddResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

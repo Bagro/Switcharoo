@@ -24,4 +24,6 @@ public interface IRepository
     Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid userId);
     
     Task<(bool wasFound, Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId);
+    
+    Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Model.Feature feature, Guid userId);
 }

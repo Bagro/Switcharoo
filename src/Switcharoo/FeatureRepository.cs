@@ -165,4 +165,53 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         
         return (feature != null, feature, feature != null ? "Feature found" : "Feature not found");
     }
+
+    public async Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Model.Feature feature, Guid userId)
+    {
+        var existingFeature = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).SingleOrDefaultAsync(x => x.Id == feature.Id && x.Owner.Id == userId);
+
+        if (existingFeature == null)
+        {
+            return (false, "Feature not found");
+        }
+        
+        existingFeature.Name = feature.Name;
+        existingFeature.Description = feature.Description;
+        var existingEnvironments = existingFeature.Environments.Select(x => x.Environment.Id).ToList();
+        var newEnvironments = feature.Environments.Select(x => x.EnvironmentId).ToList();
+        
+        var environmentsToAdd = newEnvironments.Except(existingEnvironments).ToList();
+        var environmentsToRemove = existingEnvironments.Except(newEnvironments).ToList();
+        
+        foreach (var environmentId in environmentsToAdd)
+        {
+            var environment = await context.Environments.SingleOrDefaultAsync(x => x.Id == environmentId);
+            if (environment == null)
+            {
+                return (false, "Environment not found");
+            }
+            
+            existingFeature.Environments.Add(new FeatureEnvironment
+            {
+                Feature = existingFeature,
+                Environment = environment,
+                IsEnabled = feature.Environments.Single(x => x.EnvironmentId == environmentId).IsEnabled,
+            });
+        }
+        
+        foreach (var environmentId in environmentsToRemove)
+        {
+            var featureEnvironment = existingFeature.Environments.SingleOrDefault(x => x.Environment.Id == environmentId);
+            if (featureEnvironment == null)
+            {
+                continue;
+            }
+            
+            existingFeature.Environments.Remove(featureEnvironment);
+        }
+        
+        await context.SaveChangesAsync();
+        
+        return (true, "Feature updated");
+    }
 }
