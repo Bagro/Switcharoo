@@ -39,7 +39,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
         return result.wasFound ? Ok(result.feature) : NotFound(result.reason);
     }
     
-    [HttpPut()]
+    [HttpPut("toggle")]
     [ProducesResponseType<ToggleFeatureResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ToggleFeature([FromBody] ToggleFeatureRequest request)
