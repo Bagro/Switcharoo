@@ -221,4 +221,36 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         
         return Task.FromResult((environment != null, environment, environment != null ? "Environment found" : "Environment not found"));
     }
+
+    public async Task<(bool wasUpdated, string reason)> UpdateEnvironmentAsync(Model.Environment environment, Guid userId)
+    {
+        var existingEnvironment = await context.Environments.SingleOrDefaultAsync(x => x.Id == environment.Id && x.Owner.Id == userId);
+        
+        if (existingEnvironment == null)
+        {
+            return (false, "Environment not found");
+        }
+        
+        existingEnvironment.Name = environment.Name;
+
+        await context.SaveChangesAsync();
+        
+        return (true, "Environment updated");
+    }
+
+    public async Task<(bool deleted, string reason)> DeleteEnvironmentAsync(Guid id, Guid userId)
+    {
+        var environment = await context.Environments.SingleOrDefaultAsync(x => x.Id == id && x.Owner.Id == userId);
+        
+        if (environment == null)
+        {
+            return (false, "Environment not found");
+        }
+        
+        context.Environments.Remove(environment);
+        
+        await context.SaveChangesAsync();
+        
+        return (true, "Environment deleted");
+    }
 }

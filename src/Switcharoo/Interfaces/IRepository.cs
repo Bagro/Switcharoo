@@ -28,4 +28,8 @@ public interface IRepository
     Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Model.Feature feature, Guid userId);
     
     Task<(bool wasFound, Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId);
+    
+    Task<(bool wasUpdated, string reason)> UpdateEnvironmentAsync(Model.Environment environment, Guid userId);
+    
+    Task<(bool deleted, string reason)> DeleteEnvironmentAsync(Guid id, Guid userId);
 }
