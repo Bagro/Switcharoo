@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Switcharoo.Extensions;
 using Switcharoo.Interfaces;
-using Environment = Switcharoo.Entities.Environment;
+using Environment = Switcharoo.Model.Environment;
 
 namespace Switcharoo.Controllers;
 
@@ -11,7 +11,7 @@ namespace Switcharoo.Controllers;
 [Route("[controller]")]
 public class EnvironmentsController(IFeatureProvider featureProvider) : ControllerBase
 {
-    [HttpGet()]
+    [HttpGet]
     [ProducesResponseType<List<Environment>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

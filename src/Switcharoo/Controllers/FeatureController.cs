@@ -28,7 +28,18 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
         return result.wasFound ? Ok(new FeatureStateResponse(featureName, result.isActive)) : NotFound();
     }
     
-    [HttpPut()]
+    [HttpGet("{id}")]
+    [ProducesResponseType<Feature>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetFeatureAsync(Guid id)
+    {
+        var result = await featureProvider.GetFeatureAsync(id, User.GetUserId());
+        
+        return result.wasFound ? Ok(result.feature) : NotFound(result.reason);
+    }
+    
+    [HttpPut("toggle")]
     [ProducesResponseType<ToggleFeatureResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ToggleFeature([FromBody] ToggleFeatureRequest request)
@@ -38,7 +49,18 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
         return result.wasChanged ? Ok(new ToggleFeatureResponse(request.FeatureId.ToString(), result.isActive, result.wasChanged, result.reason)) : Forbid();
     }
     
-    [HttpPost()]
+    [HttpPut]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> UpdateFeatureAsync([FromBody] Feature feature)
+    {
+        var result = await featureProvider.UpdateFeatureAsync(feature, User.GetUserId());
+        
+        return result.wasUpdated ? Ok() : BadRequest(result.reason);
+    }
+    
+    [HttpPost]
     [ProducesResponseType<AddResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

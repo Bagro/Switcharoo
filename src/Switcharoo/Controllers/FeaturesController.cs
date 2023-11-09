@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Switcharoo.Entities;
+using Switcharoo.Model;
 using Switcharoo.Extensions;
 using Switcharoo.Interfaces;
 

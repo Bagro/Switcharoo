@@ -67,4 +67,56 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
 
         return (result.wasFound, features, result.reason);
     }
+
+    public async Task<(bool wasFound, Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId)
+    {
+        var result = await repository.GetFeatureAsync(id, userId);
+
+        if (!result.wasFound || result.feature == null)
+        {
+            return (result.wasFound, null, result.reason);
+        }
+        
+        var feature = new Feature
+        {
+            Id = result.feature.Id,
+            Name = result.feature.Name,
+            Description = result.feature.Description,
+            Environments = result.feature.Environments.Select(
+                y => new FeatureEnvironment { IsEnabled = y.IsEnabled, EnvironmentId = y.Environment.Id, EnvironmentName = y.Environment.Name }).ToList(),
+        };
+            
+        return (result.wasFound, feature, result.reason);
+    }
+
+    public Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Feature feature, Guid userId)
+    {
+        return repository.UpdateFeatureAsync(feature, userId);
+    }
+
+    public async Task<(bool wasFound, Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId)
+    {
+        var result = await repository.GetEnvironmentAsync(id, userId);
+
+        if (!result.wasFound || result.environment == null)
+        {
+            return (result.wasFound, null, result.reason);
+        }
+
+        var environment = new Environment{ Id = result.environment.Id, Name = result.environment.Name };
+        
+        return (result.wasFound, environment, result.reason);
+    }
+
+    public async Task<(bool wasUpdated, string reason)> UpdateEnvironmentAsync(Environment environment, Guid userId)
+    {
+        var result = await repository.UpdateEnvironmentAsync(environment, userId);
+        
+        return (result.wasUpdated, result.reason);
+    }
+
+    public async Task<(bool deleted, string reason)> DeleteEnvironmentAsync(Guid id, Guid userId)
+    {
+        return await repository.DeleteEnvironmentAsync(id, userId);
+    }
 }
