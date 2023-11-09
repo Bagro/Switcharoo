@@ -26,4 +26,6 @@ public interface IFeatureProvider
     Task<(bool wasFound, Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId);
     
     Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Feature feature, Guid userId);
+    
+    Task<(bool wasFound, Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId);
 }

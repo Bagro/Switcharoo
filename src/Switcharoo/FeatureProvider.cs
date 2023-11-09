@@ -93,4 +93,18 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
     {
         return repository.UpdateFeatureAsync(feature, userId);
     }
+
+    public async Task<(bool wasFound, Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId)
+    {
+        var result = await repository.GetEnvironmentAsync(id, userId);
+
+        if (!result.wasFound || result.environment == null)
+        {
+            return (result.wasFound, null, result.reason);
+        }
+
+        var environment = new Environment{ Id = result.environment.Id, Name = result.environment.Name };
+        
+        return (result.wasFound, environment, result.reason);
+    }
 }

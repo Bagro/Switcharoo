@@ -214,4 +214,11 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         
         return (true, "Feature updated");
     }
+
+    public Task<(bool wasFound, Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId)
+    {
+        var environment = context.Environments.SingleOrDefault(x => x.Id == id && x.Owner.Id == userId);
+        
+        return Task.FromResult((environment != null, environment, environment != null ? "Environment found" : "Environment not found"));
+    }
 }
