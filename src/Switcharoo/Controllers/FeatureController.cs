@@ -7,10 +7,18 @@ using Switcharoo.Model;
 namespace Switcharoo.Controllers;
 
 public sealed record ToggleFeatureRequest(Guid FeatureId, Guid EnvironmentId);
+
 public sealed record AddFeatureRequest(string Name, string Description);
+
 public sealed record AddEnvironmentToFeatureRequest(Guid FeatureId, Guid EnvironmentId);
+
 public sealed record DeleteFeatureRequest(Guid FeatureId);
+
 public sealed record DeleteEnvironmentFromFeatureRequest(Guid FeatureId, Guid EnvironmentId);
+
+public sealed record FeatureUpdateRequest(Guid Id, string Name, string Description, List<FeatureUpdateEnvironment> Environments);
+
+public sealed record FeatureUpdateEnvironment(Guid Id, bool IsEnabled);
 
 [ApiController]
 [Authorize]
@@ -24,10 +32,10 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     public async Task<IActionResult> GetFeatureAsync(string featureName, Guid environmentId)
     {
         var result = await featureProvider.GetFeatureStateAsync(featureName, environmentId);
-        
+
         return result.wasFound ? Ok(new FeatureStateResponse(featureName, result.isActive)) : NotFound();
     }
-    
+
     [HttpGet("{id}")]
     [ProducesResponseType<Feature>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -35,31 +43,51 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     public async Task<IActionResult> GetFeatureAsync(Guid id)
     {
         var result = await featureProvider.GetFeatureAsync(id, User.GetUserId());
-        
+
         return result.wasFound ? Ok(result.feature) : NotFound(result.reason);
     }
-    
+
     [HttpPut("toggle")]
     [ProducesResponseType<ToggleFeatureResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ToggleFeature([FromBody] ToggleFeatureRequest request)
     {
         var result = await featureProvider.ToggleFeatureAsync(request.FeatureId, request.EnvironmentId, User.GetUserId());
-        
+
         return result.wasChanged ? Ok(new ToggleFeatureResponse(request.FeatureId.ToString(), result.isActive, result.wasChanged, result.reason)) : Forbid();
     }
-    
+
     [HttpPut]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> UpdateFeatureAsync([FromBody] Feature feature)
+    public async Task<IActionResult> UpdateFeatureAsync([FromBody] FeatureUpdateRequest featureUpdateRequest)
     {
+        var feature = new Feature
+        {
+            Id = featureUpdateRequest.Id,
+            Name = featureUpdateRequest.Name,
+            Description = featureUpdateRequest.Description,
+            Environments = new List<FeatureEnvironment>(),
+        };
+
+        foreach (var environment in featureUpdateRequest.Environments)
+        {
+            var featureEnvironment = new FeatureEnvironment
+            {
+                EnvironmentId = environment.Id,
+                IsEnabled = environment.IsEnabled,
+            };
+
+            feature.Environments.Add(featureEnvironment);
+        }
+
         var result = await featureProvider.UpdateFeatureAsync(feature, User.GetUserId());
-        
+
         return result.wasUpdated ? Ok() : BadRequest(result.reason);
     }
-    
+
     [HttpPost]
     [ProducesResponseType<AddResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -70,7 +98,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
 
         return result.wasAdded ? Ok(new AddResponse(request.Name, result.key)) : BadRequest(result.reason);
     }
-    
+
     [HttpPost("environment")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -81,7 +109,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
 
         return result.wasAdded ? Ok() : BadRequest(result.reason);
     }
-    
+
     [HttpDelete("")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -92,7 +120,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
 
         return result.deleted ? Ok() : BadRequest(result.reason);
     }
-    
+
     [HttpDelete("environment")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
