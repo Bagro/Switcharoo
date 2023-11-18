@@ -24,6 +24,7 @@ public sealed class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, G
         
         builder.Entity<Feature>().HasKey(x => x.Id);
         builder.Entity<Feature>().Property(x => x.Name).IsRequired();
+        builder.Entity<Feature>().Property(x => x.Key).IsRequired();
         builder.Entity<Feature>().HasMany(x => x.Environments).WithOne(x => x.Feature);
         
         builder.Entity<FeatureEnvironment>().HasKey(x => x.Id);
