@@ -6,9 +6,9 @@ namespace Switcharoo;
 
 public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
 {
-    public async Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureName, Guid environmentId)
+    public async Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureKey, Guid environmentId)
     {
-        return await repository.GetFeatureStateAsync(featureName, environmentId);
+        return await repository.GetFeatureStateAsync(featureKey, environmentId);
     }
 
     public async Task<(bool isActive, bool wasChanged, string reason)> ToggleFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
@@ -16,9 +16,24 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         return await repository.ToggleFeatureAsync(featureId, environmentId, userId);
     }
 
-    public async Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(string featureName, string description, Guid userId)
+    public async Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(Feature feature, Guid userId)
     {
-        return await repository.AddFeatureAsync(featureName, description, userId);
+        if (!await repository.IsNameAvailableAsync(feature.Name, userId))
+        {
+            return (false, Guid.Empty, "Name is already in use");
+        }
+        
+        if (string.IsNullOrWhiteSpace(feature.Key))
+        {
+            feature.Key = feature.Name.Replace(" ", "-").ToLower();
+        }
+
+        if(!await repository.IsKeyAvailableAsync(feature.Key, userId))
+        {
+            return (false, Guid.Empty, "Key is already in use");
+        }
+
+        return await repository.AddFeatureAsync(feature, userId);
     }
 
     public async Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
@@ -53,13 +68,13 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
     public async Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid userId)
     {
         var result = await repository.GetFeaturesAsync(userId);
-
-        // Map the entities to the model including the environments
+        
         var features = result.features.Select(
             x => new Feature
             {
                 Id = x.Id,
                 Name = x.Name,
+                Key = x.Key,
                 Description = x.Description,
                 Environments = x.Environments.Select(
                     y => new FeatureEnvironment { IsEnabled = y.IsEnabled, EnvironmentId = y.Environment.Id, EnvironmentName = y.Environment.Name }).ToList(),
@@ -81,6 +96,7 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         {
             Id = result.feature.Id,
             Name = result.feature.Name,
+            Key = result.feature.Key,
             Description = result.feature.Description,
             Environments = result.feature.Environments.Select(
                 y => new FeatureEnvironment { IsEnabled = y.IsEnabled, EnvironmentId = y.Environment.Id, EnvironmentName = y.Environment.Name }).ToList(),
@@ -89,9 +105,24 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         return (result.wasFound, feature, result.reason);
     }
 
-    public Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Feature feature, Guid userId)
+    public async Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Feature feature, Guid userId)
     {
-        return repository.UpdateFeatureAsync(feature, userId);
+        if (!await repository.IsNameAvailableAsync(feature.Name, feature.Id, userId))
+        {
+            return (false, "Name is already in use");
+        }
+
+        if (string.IsNullOrWhiteSpace(feature.Key))
+        {
+            feature.Key = feature.Name.Replace(" ", "-").ToLower();
+        }
+
+        if(!await repository.IsKeyAvailableAsync(feature.Key, feature.Id, userId))
+        {
+            return (false, "Key is already in use");
+        }
+        
+        return await repository.UpdateFeatureAsync(feature, userId);
     }
 
     public async Task<(bool wasFound, Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId)

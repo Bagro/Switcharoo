@@ -5,11 +5,11 @@ namespace Switcharoo.Interfaces;
 
 public interface IRepository
 {
-    Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureName, Guid environmentId);
+    Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureKey, Guid environmentId);
 
     Task<(bool isActive, bool wasChanged, string reason)> ToggleFeatureAsync(Guid featureId, Guid environmentId, Guid userId);
 
-    Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(string featureName, string description, Guid userId);
+    Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(Model.Feature feature, Guid userId);
 
     Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureId, Guid environmentId, Guid userId);
 
@@ -32,4 +32,12 @@ public interface IRepository
     Task<(bool wasUpdated, string reason)> UpdateEnvironmentAsync(Model.Environment environment, Guid userId);
     
     Task<(bool deleted, string reason)> DeleteEnvironmentAsync(Guid id, Guid userId);
+    
+    Task<bool> IsNameAvailableAsync(string name, Guid userId);
+    
+    Task<bool> IsNameAvailableAsync(string name, Guid featureId, Guid userId);
+    
+    Task<bool> IsKeyAvailableAsync(string key, Guid userId);
+    
+    Task<bool> IsKeyAvailableAsync(string key, Guid featureId, Guid userId);
 }

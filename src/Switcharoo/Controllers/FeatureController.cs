@@ -8,7 +8,7 @@ namespace Switcharoo.Controllers;
 
 public sealed record ToggleFeatureRequest(Guid FeatureId, Guid EnvironmentId);
 
-public sealed record AddFeatureRequest(string Name, string Description);
+public sealed record AddFeatureRequest(string Name, string Key, string Description, List<FeatureUpdateEnvironment> Environments);
 
 public sealed record AddEnvironmentToFeatureRequest(Guid FeatureId, Guid EnvironmentId);
 
@@ -16,7 +16,7 @@ public sealed record DeleteFeatureRequest(Guid FeatureId);
 
 public sealed record DeleteEnvironmentFromFeatureRequest(Guid FeatureId, Guid EnvironmentId);
 
-public sealed record FeatureUpdateRequest(Guid Id, string Name, string Description, List<FeatureUpdateEnvironment> Environments);
+public sealed record FeatureUpdateRequest(Guid Id, string Name, string Key, string Description, List<FeatureUpdateEnvironment> Environments);
 
 public sealed record FeatureUpdateEnvironment(Guid Id, bool IsEnabled);
 
@@ -25,15 +25,15 @@ public sealed record FeatureUpdateEnvironment(Guid Id, bool IsEnabled);
 [Route("[controller]")]
 public sealed class FeatureController(IFeatureProvider featureProvider) : ControllerBase
 {
-    [HttpGet("{featureName}/environment/{environmentId}")]
+    [HttpGet("{featureKey}/environment/{environmentId}")]
     [AllowAnonymous]
     [ProducesResponseType<FeatureStateResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetFeatureAsync(string featureName, Guid environmentId)
+    public async Task<IActionResult> GetFeatureAsync(string featureKey, Guid environmentId)
     {
-        var result = await featureProvider.GetFeatureStateAsync(featureName, environmentId);
+        var result = await featureProvider.GetFeatureStateAsync(featureKey, environmentId);
 
-        return result.wasFound ? Ok(new FeatureStateResponse(featureName, result.isActive)) : NotFound();
+        return result.wasFound ? Ok(new FeatureStateResponse(featureKey, result.isActive)) : NotFound();
     }
 
     [HttpGet("{id}")]
@@ -58,7 +58,6 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     }
 
     [HttpPut]
-    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -68,20 +67,16 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
         {
             Id = featureUpdateRequest.Id,
             Name = featureUpdateRequest.Name,
+            Key = featureUpdateRequest.Key,
             Description = featureUpdateRequest.Description,
-            Environments = new List<FeatureEnvironment>(),
+            Environments = featureUpdateRequest.Environments
+                .Select(environment => new FeatureEnvironment
+                {
+                    EnvironmentId = environment.Id,
+                    IsEnabled = environment.IsEnabled,
+                })
+                .ToList(),
         };
-
-        foreach (var environment in featureUpdateRequest.Environments)
-        {
-            var featureEnvironment = new FeatureEnvironment
-            {
-                EnvironmentId = environment.Id,
-                IsEnabled = environment.IsEnabled,
-            };
-
-            feature.Environments.Add(featureEnvironment);
-        }
 
         var result = await featureProvider.UpdateFeatureAsync(feature, User.GetUserId());
 
@@ -94,7 +89,21 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddFeatureAsync([FromBody] AddFeatureRequest request)
     {
-        var result = await featureProvider.AddFeatureAsync(request.Name, request.Description, User.GetUserId());
+        var feature = new Feature
+        {
+            Name = request.Name,
+            Key = request.Key,
+            Description = request.Description,
+            Environments = request.Environments
+                .Select(environment => new FeatureEnvironment
+                {
+                    EnvironmentId = environment.Id,
+                    IsEnabled = environment.IsEnabled,
+                })
+                .ToList(),
+        };
+        
+        var result = await featureProvider.AddFeatureAsync(feature, User.GetUserId());
 
         return result.wasAdded ? Ok(new AddResponse(request.Name, result.key)) : BadRequest(result.reason);
     }
