@@ -8,9 +8,9 @@ namespace Switcharoo;
 
 public sealed class FeatureRepository(AppDbContext context) : IRepository
 {
-    public async Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureName, Guid environmentId)
+    public async Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureKey, Guid environmentId)
     {
-        var feature = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).SingleOrDefaultAsync(x => x.Name == featureName && x.Environments.Any(y => y.Environment.Id == environmentId));
+        var feature = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).SingleOrDefaultAsync(x => x.Key == featureKey && x.Environments.Any(y => y.Environment.Id == environmentId));
 
         var active = feature?.Environments.SingleOrDefault(x => x.Environment.Id == environmentId)?.IsEnabled;
 
@@ -35,13 +35,8 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         return (featureEnvironment.IsEnabled, true, "Feature toggled");
     }
 
-    public async Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(string featureName, string description, Guid userId)
+    public async Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(Model.Feature feature, Guid userId)
     {
-        if (await context.Features.AnyAsync(x => x.Name == featureName && x.Owner.Id == userId))
-        {
-            return (false, Guid.Empty, "Feature already exists");
-        }
-
         var user = await context.Users.SingleOrDefaultAsync(x => x.Id == userId);
 
         if (user == null)
@@ -49,9 +44,26 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
             return (false, Guid.Empty, "User not found");
         }
 
-        var feature = new Feature { Id = Guid.NewGuid(), Name = featureName, Description = description, Owner = user, Environments = new List<FeatureEnvironment>() };
+        var featureToAdd = new Feature { Id = Guid.NewGuid(), Name = feature.Name, Key = feature.Key, Description = feature.Description, Owner = user, Environments = new List<FeatureEnvironment>() };
+        
+        foreach (var environment in feature.Environments)
+        {
+            var existingEnvironment = await context.Environments.FirstOrDefaultAsync(x => x.Id == environment.EnvironmentId && x.Owner.Id == userId);
+            if (existingEnvironment == null)
+            {
+                continue;
+            }
+            
+            featureToAdd.Environments.Add(new FeatureEnvironment
+            {
+                Feature = featureToAdd,
+                Environment = existingEnvironment,
+                IsEnabled = environment.IsEnabled,
+                Id = Guid.NewGuid(),
+            });
+        }
 
-        await context.Features.AddAsync(feature);
+        await context.Features.AddAsync(featureToAdd);
         await context.SaveChangesAsync();
 
         return (true, feature.Id, "Feature added");
@@ -176,6 +188,7 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         }
         
         existingFeature.Name = feature.Name;
+        existingFeature.Key = feature.Key;
         existingFeature.Description = feature.Description;
         var existingEnvironments = existingFeature.Environments.Select(x => x.Environment.Id).ToList();
         var newEnvironments = feature.Environments.Select(x => x.EnvironmentId).ToList();
@@ -252,5 +265,25 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         await context.SaveChangesAsync();
         
         return (true, "Environment deleted");
+    }
+
+    public async Task<bool> IsNameAvailableAsync(string name, Guid userId)
+    {
+        return !await context.Features.AnyAsync(x => x.Owner.Id == userId && x.Name == name);
+    }
+
+    public async Task<bool> IsNameAvailableAsync(string name, Guid featureId, Guid userId)
+    {
+        return !await context.Features.AnyAsync(x => x.Id != featureId && x.Owner.Id == userId && x.Name == name);
+    }
+
+    public async Task<bool> IsKeyAvailableAsync(string key, Guid userId)
+    {
+        return !await context.Features.AnyAsync(x => x.Owner.Id == userId && x.Key == key);
+    }
+
+    public async Task<bool> IsKeyAvailableAsync(string key, Guid featureId, Guid userId)
+    {
+        return !await context.Features.AnyAsync(x => x.Id != featureId && x.Owner.Id == userId && x.Key == key);
     }
 }

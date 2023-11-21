@@ -5,11 +5,11 @@ namespace Switcharoo.Interfaces;
 
 public interface IFeatureProvider
 {
-    Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureName, Guid environmentId);
+    Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureKey, Guid environmentId);
 
     Task<(bool isActive, bool wasChanged, string reason)> ToggleFeatureAsync(Guid featureId, Guid environmentId, Guid userId);
     
-    Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(string featureName, string description, Guid userId);
+    Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(Feature feature, Guid userId);
     
     Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureId, Guid environmentId, Guid userId);
     
