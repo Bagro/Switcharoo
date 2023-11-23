@@ -10,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
 builder.Services.AddAuthorizationBuilder();
 
+var httpOnly = builder.Configuration.GetSection("HTTP_Only").Get<bool?>() ?? false;
+
 builder.Services.AddDbContext<AppDbContext>(x => x.UseSqlite(builder.Configuration.GetConnectionString("SwitcharooDb")));
 
 builder.Services.AddCors(
@@ -58,7 +60,11 @@ app.UseSwagger();
 app.UseSwaggerUI();
 #endif
 
-app.UseHttpsRedirection();
+if (!httpOnly)
+{
+    app.UseHttpsRedirection();
+}
+
 app.MapGroup("auth").MapIdentityApi<User>();
 
 app.MapControllers();
