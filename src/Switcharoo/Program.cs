@@ -53,11 +53,10 @@ var app = builder.Build();
 app.UseCors("CorsPolicy");
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+#if DEBUG
+app.UseSwaggerUI();
+#endif
 
 app.UseHttpsRedirection();
 app.MapGroup("auth").MapIdentityApi<User>();
