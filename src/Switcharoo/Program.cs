@@ -13,15 +13,16 @@ builder.Services.AddAuthorizationBuilder();
 builder.Services.AddDbContext<AppDbContext>(x => x.UseSqlite(builder.Configuration.GetConnectionString("SwitcharooDb")));
 
 builder.Services.AddCors(
-    options => options.AddPolicy("CorsPolicy",
+    options => options.AddPolicy(
+        "CorsPolicy",
         policyBuilder =>
         {
-            var corsOrigins = builder.Configuration.GetSection("CorsOrigins").Get<string[]>();
+            var corsOrigins = builder.Configuration.GetSection("CorsOrigins").Get<string>()?.Split(';', StringSplitOptions.RemoveEmptyEntries);
             if (corsOrigins == null || corsOrigins.Length == 0)
             {
                 return;
             }
-            
+
             policyBuilder.WithOrigins(corsOrigins)
                 .AllowAnyHeader()
                 .AllowAnyMethod()
@@ -42,10 +43,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
-builder.Services.Configure<RouteOptions>(options =>
-{
-    options.LowercaseUrls = true;
-});
+builder.Services.Configure<RouteOptions>(
+    options =>
+    {
+        options.LowercaseUrls = true;
+    });
 
 var app = builder.Build();
 app.UseCors("CorsPolicy");
