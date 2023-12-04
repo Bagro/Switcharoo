@@ -9,7 +9,7 @@ namespace Switcharoo.Controllers;
 [ApiController]
 [Authorize]
 [Route("[controller]")]
-public class EnvironmentsController(IFeatureProvider featureProvider) : ControllerBase
+public class EnvironmentsController(IEnvironmentProvider environmentProvider) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType<List<Environment>>(StatusCodes.Status200OK)]
@@ -17,7 +17,7 @@ public class EnvironmentsController(IFeatureProvider featureProvider) : Controll
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetEnvironmentsAsync()
     {
-        var result = await featureProvider.GetEnvironmentsAsync(User.GetUserId());
+        var result = await environmentProvider.GetEnvironmentsAsync(User.GetUserId());
 
         return result.wasFound ? Ok(result.environments) : BadRequest(result.reason);
     }

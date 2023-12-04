@@ -56,61 +56,6 @@ public sealed class FeatureProviderTests
         // Assert
         result.reason.Should().BeEmpty();
     }
-    
-    [Fact]
-    public async Task GetEnvironmentsAsync_WhenEnvironmentsFound_ReturnsWasFound()
-    {
-        // Arrange
-        var userId = GetEnvironmentsAsyncSetup();
-
-        // Act
-        var result = await _featureProvider.GetEnvironmentsAsync(userId);
-
-        // Assert
-        result.wasFound.Should().BeTrue();
-    }
-    
-    [Fact]
-    public async Task GetEnvironmentsAsync_WhenEnvironmentsFound_ReturnsCorrectNumberOfEnvironments()
-    {
-        // Arrange
-        var userId = GetEnvironmentsAsyncSetup();
-
-        // Act
-        var result = await _featureProvider.GetEnvironmentsAsync(userId);
-
-        // Assert
-        result.environments.Should().HaveCount(3);
-    }
-    
-    [Fact]
-    public async Task GetEnvironmentsAsync_WhenEnvironmentsFound_ReturnsWithNoReason()
-    {
-        // Arrange
-        var userId = GetEnvironmentsAsyncSetup();
-
-        // Act
-        var result = await _featureProvider.GetEnvironmentsAsync(userId);
-
-        // Assert
-        result.reason.Should().BeEmpty();
-    }
-
-    private Guid GetEnvironmentsAsyncSetup()
-    {
-        var userId = Guid.NewGuid();
-
-        var environments = new List<Entities.Environment>
-        {
-            new() { Id = Guid.NewGuid(), Name = "Environment 1", Owner = new Entities.User { Id = userId }, Features = new List<FeatureEnvironment>() },
-            new() { Id = Guid.NewGuid(), Name = "Environment 2", Owner = new Entities.User { Id = userId }, Features = new List<FeatureEnvironment>() },
-            new() { Id = Guid.NewGuid(), Name = "Environment 3", Owner = new Entities.User { Id = userId }, Features = new List<FeatureEnvironment>() },
-        };
-
-        _repository.GetEnvironmentsAsync(userId).Returns((true, environments, string.Empty));
-
-        return userId;
-    }
 
     private Guid GetFeaturesAsyncSetup()
     {

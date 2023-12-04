@@ -1,6 +1,5 @@
 using Switcharoo.Interfaces;
 using Switcharoo.Model;
-using Environment = Switcharoo.Model.Environment;
 
 namespace Switcharoo;
 
@@ -22,13 +21,13 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         {
             return (false, Guid.Empty, "Name is already in use");
         }
-        
+
         if (string.IsNullOrWhiteSpace(feature.Key))
         {
             feature.Key = feature.Name.Replace(" ", "-").ToLower();
         }
 
-        if(!await repository.IsKeyAvailableAsync(feature.Key, userId))
+        if (!await repository.IsKeyAvailableAsync(feature.Key, userId))
         {
             return (false, Guid.Empty, "Key is already in use");
         }
@@ -51,24 +50,11 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         return await repository.DeleteEnvironmentFromFeatureAsync(featureId, environmentId, userId);
     }
 
-    public async Task<(bool wasAdded, Guid key, string reason)> AddEnvironmentAsync(string environmentName, Guid userId)
-    {
-        return await repository.AddEnvironmentAsync(environmentName, userId);
-    }
-
-    public async Task<(bool wasFound, List<Environment> environments, string reason)> GetEnvironmentsAsync(Guid userId)
-    {
-        var result = await repository.GetEnvironmentsAsync(userId);
-
-        var environments = result.environments.Select(x => new Environment { Id = x.Id, Name = x.Name }).ToList();
-
-        return (result.wasFound, environments, result.reason);
-    }
 
     public async Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid userId)
     {
         var result = await repository.GetFeaturesAsync(userId);
-        
+
         var features = result.features.Select(
             x => new Feature
             {
@@ -91,7 +77,7 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         {
             return (result.wasFound, null, result.reason);
         }
-        
+
         var feature = new Feature
         {
             Id = result.feature.Id,
@@ -101,7 +87,7 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
             Environments = result.feature.Environments.Select(
                 y => new FeatureEnvironment { IsEnabled = y.IsEnabled, EnvironmentId = y.Environment.Id, EnvironmentName = y.Environment.Name }).ToList(),
         };
-            
+
         return (result.wasFound, feature, result.reason);
     }
 
@@ -117,37 +103,11 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
             feature.Key = feature.Name.Replace(" ", "-").ToLower();
         }
 
-        if(!await repository.IsKeyAvailableAsync(feature.Key, feature.Id, userId))
+        if (!await repository.IsKeyAvailableAsync(feature.Key, feature.Id, userId))
         {
             return (false, "Key is already in use");
         }
-        
+
         return await repository.UpdateFeatureAsync(feature, userId);
-    }
-
-    public async Task<(bool wasFound, Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId)
-    {
-        var result = await repository.GetEnvironmentAsync(id, userId);
-
-        if (!result.wasFound || result.environment == null)
-        {
-            return (result.wasFound, null, result.reason);
-        }
-
-        var environment = new Environment{ Id = result.environment.Id, Name = result.environment.Name };
-        
-        return (result.wasFound, environment, result.reason);
-    }
-
-    public async Task<(bool wasUpdated, string reason)> UpdateEnvironmentAsync(Environment environment, Guid userId)
-    {
-        var result = await repository.UpdateEnvironmentAsync(environment, userId);
-        
-        return (result.wasUpdated, result.reason);
-    }
-
-    public async Task<(bool deleted, string reason)> DeleteEnvironmentAsync(Guid id, Guid userId)
-    {
-        return await repository.DeleteEnvironmentAsync(id, userId);
     }
 }
