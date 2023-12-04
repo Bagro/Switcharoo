@@ -157,25 +157,60 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         return (true, environment.Id, "Environment added");
     }
 
-    public async Task<(bool wasFound, List<Environment> environments, string reason)> GetEnvironmentsAsync(Guid userId)
+    public async Task<(bool wasFound, List<Model.Environment> environments, string reason)> GetEnvironmentsAsync(Guid userId)
     {
         var environments = await context.Environments.Where(x => x.Owner.Id == userId).ToListAsync();
 
-        return (environments.Count != 0, environments, environments.Count != 0 ? "Environments found" : "No environments found");
+        return (environments.Count != 0, environments.Select(x => new Model.Environment
+        {
+            Id = x.Id,
+            Name = x.Name,
+        }).ToList(), environments.Count != 0 ? "Environments found" : "No environments found");
     }
 
-    public async Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid userId)
+    public async Task<(bool wasFound, List<Model.Feature> features, string reason)> GetFeaturesAsync(Guid userId)
     {
         var features = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).Where(x => x.Owner.Id == userId).ToListAsync();
-
-        return (features.Count != 0, features, features.Count != 0 ? "Features found" : "No features found");
+        
+        return (features.Count != 0, features.Select(x => new Model.Feature
+        {
+            Id = x.Id,
+            Name = x.Name,
+            Key = x.Key,
+            Description = x.Description,
+            Environments = x.Environments.OrderBy(e => e.Environment.Name).Select(y => new Model.FeatureEnvironment()
+            {
+                IsEnabled = y.IsEnabled,
+                EnvironmentId = y.Environment.Id,
+                EnvironmentName = y.Environment.Name
+            }).ToList(),
+        }).ToList(), features.Count != 0 ? "Features found" : "No features found");
     }
 
-    public async Task<(bool wasFound, Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId)
+    public async Task<(bool wasFound, Model.Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId)
     {
         var feature = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).SingleOrDefaultAsync(x => x.Id == id && x.Owner.Id == userId);
+
+        if (feature == null)
+        {
+            return (false, null, "Feature not found");
+        }
         
-        return (feature != null, feature, feature != null ? "Feature found" : "Feature not found");
+        feature.Environments = feature.Environments.OrderBy(x => x.Environment.Name).ToList();
+        
+        return (true, new Model.Feature
+        {
+            Id = feature.Id,
+            Name = feature.Name,
+            Key = feature.Key,
+            Description = feature.Description,
+            Environments = feature.Environments.Select(y => new Model.FeatureEnvironment()
+            {
+                IsEnabled = y.IsEnabled,
+                EnvironmentId = y.Environment.Id,
+                EnvironmentName = y.Environment.Name
+            }).ToList(),
+        }, "Feature found");
     }
 
     public async Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Model.Feature feature, Guid userId)
@@ -228,11 +263,20 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         return (true, "Feature updated");
     }
 
-    public Task<(bool wasFound, Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId)
+    public async Task<(bool wasFound, Model.Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId)
     {
-        var environment = context.Environments.SingleOrDefault(x => x.Id == id && x.Owner.Id == userId);
-        
-        return Task.FromResult((environment != null, environment, environment != null ? "Environment found" : "Environment not found"));
+        var environment = await context.Environments.SingleOrDefaultAsync(x => x.Id == id && x.Owner.Id == userId);
+
+        if (environment == null)
+        {
+            return (false, null, "Environment not found");
+        }
+
+        return (true, new Model.Environment
+        {
+            Id = environment.Id,
+            Name = environment.Name,
+        }, "Environment found");
     }
 
     public async Task<(bool wasUpdated, string reason)> UpdateEnvironmentAsync(Model.Environment environment, Guid userId)

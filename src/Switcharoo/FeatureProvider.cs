@@ -55,18 +55,7 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
     {
         var result = await repository.GetFeaturesAsync(userId);
 
-        var features = result.features.Select(
-            x => new Feature
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Key = x.Key,
-                Description = x.Description,
-                Environments = x.Environments.Select(
-                    y => new FeatureEnvironment { IsEnabled = y.IsEnabled, EnvironmentId = y.Environment.Id, EnvironmentName = y.Environment.Name }).ToList(),
-            }).ToList();
-
-        return (result.wasFound, features, result.reason);
+        return (result.wasFound, result.features, result.reason);
     }
 
     public async Task<(bool wasFound, Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId)
@@ -78,17 +67,7 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
             return (result.wasFound, null, result.reason);
         }
 
-        var feature = new Feature
-        {
-            Id = result.feature.Id,
-            Name = result.feature.Name,
-            Key = result.feature.Key,
-            Description = result.feature.Description,
-            Environments = result.feature.Environments.Select(
-                y => new FeatureEnvironment { IsEnabled = y.IsEnabled, EnvironmentId = y.Environment.Id, EnvironmentName = y.Environment.Name }).ToList(),
-        };
-
-        return (result.wasFound, feature, result.reason);
+        return (result.wasFound, result.feature, result.reason);
     }
 
     public async Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Feature feature, Guid userId)

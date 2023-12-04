@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using NSubstitute;
-using Switcharoo.Entities;
 using Switcharoo.Interfaces;
 using Xunit;
 
@@ -60,11 +59,11 @@ public sealed class EnvironmentProviderTests
     {
         var userId = Guid.NewGuid();
 
-        var environments = new List<Entities.Environment>
+        var environments = new List<Model.Environment>
         {
-            new() { Id = Guid.NewGuid(), Name = "Environment 1", Owner = new Entities.User { Id = userId }, Features = new List<FeatureEnvironment>() },
-            new() { Id = Guid.NewGuid(), Name = "Environment 2", Owner = new Entities.User { Id = userId }, Features = new List<FeatureEnvironment>() },
-            new() { Id = Guid.NewGuid(), Name = "Environment 3", Owner = new Entities.User { Id = userId }, Features = new List<FeatureEnvironment>() },
+            new() { Id = Guid.NewGuid(), Name = "Environment 1" },
+            new() { Id = Guid.NewGuid(), Name = "Environment 2" },
+            new() { Id = Guid.NewGuid(), Name = "Environment 3" },
         };
 
         _repository?.GetEnvironmentsAsync(userId).Returns((true, environments, string.Empty));
