@@ -56,7 +56,7 @@ public sealed class FeatureProviderTests
         // Assert
         result.reason.Should().BeEmpty();
     }
-    
+
     [Fact]
     public async Task GetFeatureStateAsync_ActiveFeature_ReturnsIsActiveTrue()
     {
@@ -65,14 +65,14 @@ public sealed class FeatureProviderTests
         repository.GetFeatureStateAsync(Arg.Any<string>(), Arg.Any<Guid>())
             .Returns((true, true));
         var sut = new FeatureProvider(repository);
-            
+
         // Act
         var result = await sut.GetFeatureStateAsync("featureKey", Guid.NewGuid());
-            
+
         // Assert
         result.isActive.Should().BeTrue();
     }
-        
+
     [Fact]
     public async Task GetFeatureStateAsync_InactiveFeature_ReturnsIsActiveFalse()
     {
@@ -81,14 +81,14 @@ public sealed class FeatureProviderTests
         repository.GetFeatureStateAsync(Arg.Any<string>(), Arg.Any<Guid>())
             .Returns((false, true));
         var sut = new FeatureProvider(repository);
-            
+
         // Act
         var result = await sut.GetFeatureStateAsync("featureKey", Guid.NewGuid());
-            
+
         // Assert
         result.isActive.Should().BeFalse();
     }
-        
+
     [Fact]
     public async Task GetFeatureStateAsync_FeatureNotFound_ReturnsWasFoundFalse()
     {
@@ -97,10 +97,10 @@ public sealed class FeatureProviderTests
         repository.GetFeatureStateAsync(Arg.Any<string>(), Arg.Any<Guid>())
             .Returns((false, false));
         var sut = new FeatureProvider(repository);
-            
+
         // Act
         var result = await sut.GetFeatureStateAsync("featureKey", Guid.NewGuid());
-            
+
         // Assert
         result.wasFound.Should().BeFalse();
     }
@@ -114,17 +114,17 @@ public sealed class FeatureProviderTests
             new()
             {
                 Id = Guid.NewGuid(), Name = "Feature 1", Description = "Description 1", Key = "feature-1",
-                Environments = new List<FeatureEnvironment> { new() {  EnvironmentId = Guid.NewGuid(), EnvironmentName = "Environment 1" , IsEnabled = true } },
+                Environments = new List<FeatureEnvironment> { new(true, "Environment 1", Guid.NewGuid()) },
             },
             new()
             {
                 Id = Guid.NewGuid(), Name = "Feature 2", Description = "Description 2", Key = "feature-2",
-                Environments = new List<FeatureEnvironment> { new() { EnvironmentId = Guid.NewGuid(), EnvironmentName = "Environment 2" , IsEnabled = true } },
+                Environments = new List<FeatureEnvironment> { new(true, "Environment 2", Guid.NewGuid()) },
             },
             new()
             {
                 Id = Guid.NewGuid(), Name = "Feature 3", Description = "Description 3", Key = "feature-3",
-                Environments = new List<FeatureEnvironment> { new() { EnvironmentId = Guid.NewGuid(), EnvironmentName = "Environment 3" , IsEnabled = true } },
+                Environments = new List<FeatureEnvironment> { new(true, "Environment 3", Guid.NewGuid()) },
             }
         };
 

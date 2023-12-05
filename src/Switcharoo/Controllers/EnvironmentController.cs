@@ -2,13 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Switcharoo.Extensions;
 using Switcharoo.Interfaces;
-using Switcharoo.Model;
+using Switcharoo.Model.Requests;
+using Switcharoo.Model.Responses;
 using Environment = Switcharoo.Model.Environment;
 
 namespace Switcharoo.Controllers;
-
-public sealed record AddEnvironmentRequest(string Name);
-public sealed record DeleteEnvironmentRequest(Guid EnvironmentId);
 
 [ApiController]
 [Authorize]

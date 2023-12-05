@@ -3,22 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Switcharoo.Extensions;
 using Switcharoo.Interfaces;
 using Switcharoo.Model;
+using Switcharoo.Model.Requests;
+using Switcharoo.Model.Responses;
 
 namespace Switcharoo.Controllers;
-
-public sealed record ToggleFeatureRequest(Guid FeatureId, Guid EnvironmentId);
-
-public sealed record AddFeatureRequest(string Name, string Key, string Description, List<FeatureUpdateEnvironment> Environments);
-
-public sealed record AddEnvironmentToFeatureRequest(Guid FeatureId, Guid EnvironmentId);
-
-public sealed record DeleteFeatureRequest(Guid FeatureId);
-
-public sealed record DeleteEnvironmentFromFeatureRequest(Guid FeatureId, Guid EnvironmentId);
-
-public sealed record FeatureUpdateRequest(Guid Id, string Name, string Key, string Description, List<FeatureUpdateEnvironment> Environments);
-
-public sealed record FeatureUpdateEnvironment(Guid Id, bool IsEnabled);
 
 [ApiController]
 [Authorize]
@@ -70,11 +58,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
             Key = featureUpdateRequest.Key,
             Description = featureUpdateRequest.Description,
             Environments = featureUpdateRequest.Environments
-                .Select(environment => new FeatureEnvironment
-                {
-                    EnvironmentId = environment.Id,
-                    IsEnabled = environment.IsEnabled,
-                })
+                .Select(environment => new FeatureEnvironment(environment.IsEnabled, string.Empty, environment.Id))
                 .ToList(),
         };
 
@@ -95,11 +79,7 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
             Key = request.Key,
             Description = request.Description,
             Environments = request.Environments
-                .Select(environment => new FeatureEnvironment
-                {
-                    EnvironmentId = environment.Id,
-                    IsEnabled = environment.IsEnabled,
-                })
+                .Select(environment => new FeatureEnvironment(environment.IsEnabled, string.Empty, environment.Id))
                 .ToList(),
         };
         
