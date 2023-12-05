@@ -37,6 +37,7 @@ builder.Services.AddIdentityCore<User>()
     .AddApiEndpoints();
 
 builder.Services.AddScoped<IFeatureProvider, FeatureProvider>();
+builder.Services.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
 builder.Services.AddScoped<IRepository, FeatureRepository>();
 
 // Add services to the container.

@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using NSubstitute;
-using Switcharoo.Entities;
+using Switcharoo.Model;
 using Switcharoo.Interfaces;
 using Xunit;
 
@@ -56,82 +56,75 @@ public sealed class FeatureProviderTests
         // Assert
         result.reason.Should().BeEmpty();
     }
-    
+
     [Fact]
-    public async Task GetEnvironmentsAsync_WhenEnvironmentsFound_ReturnsWasFound()
+    public async Task GetFeatureStateAsync_ActiveFeature_ReturnsIsActiveTrue()
     {
         // Arrange
-        var userId = GetEnvironmentsAsyncSetup();
+        var repository = Substitute.For<IRepository>();
+        repository.GetFeatureStateAsync(Arg.Any<string>(), Arg.Any<Guid>())
+            .Returns((true, true));
+        var sut = new FeatureProvider(repository);
 
         // Act
-        var result = await _featureProvider.GetEnvironmentsAsync(userId);
+        var result = await sut.GetFeatureStateAsync("featureKey", Guid.NewGuid());
 
         // Assert
-        result.wasFound.Should().BeTrue();
+        result.isActive.Should().BeTrue();
     }
-    
+
     [Fact]
-    public async Task GetEnvironmentsAsync_WhenEnvironmentsFound_ReturnsCorrectNumberOfEnvironments()
+    public async Task GetFeatureStateAsync_InactiveFeature_ReturnsIsActiveFalse()
     {
         // Arrange
-        var userId = GetEnvironmentsAsyncSetup();
+        var repository = Substitute.For<IRepository>();
+        repository.GetFeatureStateAsync(Arg.Any<string>(), Arg.Any<Guid>())
+            .Returns((false, true));
+        var sut = new FeatureProvider(repository);
 
         // Act
-        var result = await _featureProvider.GetEnvironmentsAsync(userId);
+        var result = await sut.GetFeatureStateAsync("featureKey", Guid.NewGuid());
 
         // Assert
-        result.environments.Should().HaveCount(3);
+        result.isActive.Should().BeFalse();
     }
-    
+
     [Fact]
-    public async Task GetEnvironmentsAsync_WhenEnvironmentsFound_ReturnsWithNoReason()
+    public async Task GetFeatureStateAsync_FeatureNotFound_ReturnsWasFoundFalse()
     {
         // Arrange
-        var userId = GetEnvironmentsAsyncSetup();
+        var repository = Substitute.For<IRepository>();
+        repository.GetFeatureStateAsync(Arg.Any<string>(), Arg.Any<Guid>())
+            .Returns((false, false));
+        var sut = new FeatureProvider(repository);
 
         // Act
-        var result = await _featureProvider.GetEnvironmentsAsync(userId);
+        var result = await sut.GetFeatureStateAsync("featureKey", Guid.NewGuid());
 
         // Assert
-        result.reason.Should().BeEmpty();
-    }
-
-    private Guid GetEnvironmentsAsyncSetup()
-    {
-        var userId = Guid.NewGuid();
-
-        var environments = new List<Entities.Environment>
-        {
-            new() { Id = Guid.NewGuid(), Name = "Environment 1", Owner = new Entities.User { Id = userId }, Features = new List<FeatureEnvironment>() },
-            new() { Id = Guid.NewGuid(), Name = "Environment 2", Owner = new Entities.User { Id = userId }, Features = new List<FeatureEnvironment>() },
-            new() { Id = Guid.NewGuid(), Name = "Environment 3", Owner = new Entities.User { Id = userId }, Features = new List<FeatureEnvironment>() },
-        };
-
-        _repository.GetEnvironmentsAsync(userId).Returns((true, environments, string.Empty));
-
-        return userId;
+        result.wasFound.Should().BeFalse();
     }
 
     private Guid GetFeaturesAsyncSetup()
     {
         var userId = Guid.NewGuid();
 
-        var features = new List<Entities.Feature>
+        var features = new List<Feature>
         {
             new()
             {
-                Id = Guid.NewGuid(), Name = "Feature 1", Description = "Description 1", Owner = new Entities.User { Id = userId },
-                Environments = new List<FeatureEnvironment> { new() { Environment = new Entities.Environment { Id = Guid.NewGuid(), Name = "Environment 1" }, IsEnabled = true } }
+                Id = Guid.NewGuid(), Name = "Feature 1", Description = "Description 1", Key = "feature-1",
+                Environments = new List<FeatureEnvironment> { new(true, "Environment 1", Guid.NewGuid()) },
             },
             new()
             {
-                Id = Guid.NewGuid(), Name = "Feature 2", Description = "Description 2", Owner = new Entities.User { Id = userId },
-                Environments = new List<FeatureEnvironment> { new() { Environment = new Entities.Environment { Id = Guid.NewGuid(), Name = "Environment 2" }, IsEnabled = true } },
+                Id = Guid.NewGuid(), Name = "Feature 2", Description = "Description 2", Key = "feature-2",
+                Environments = new List<FeatureEnvironment> { new(true, "Environment 2", Guid.NewGuid()) },
             },
             new()
             {
-                Id = Guid.NewGuid(), Name = "Feature 3", Description = "Description 3", Owner = new Entities.User { Id = userId },
-                Environments = new List<FeatureEnvironment> { new() { Environment = new Entities.Environment { Id = Guid.NewGuid(), Name = "Environment 3" }, IsEnabled = true } },
+                Id = Guid.NewGuid(), Name = "Feature 3", Description = "Description 3", Key = "feature-3",
+                Environments = new List<FeatureEnvironment> { new(true, "Environment 3", Guid.NewGuid()) },
             }
         };
 

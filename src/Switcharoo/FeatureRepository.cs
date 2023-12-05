@@ -45,7 +45,7 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         }
 
         var featureToAdd = new Feature { Id = Guid.NewGuid(), Name = feature.Name, Key = feature.Key, Description = feature.Description, Owner = user, Environments = new List<FeatureEnvironment>() };
-        
+
         foreach (var environment in feature.Environments)
         {
             var existingEnvironment = await context.Environments.FirstOrDefaultAsync(x => x.Id == environment.EnvironmentId && x.Owner.Id == userId);
@@ -53,14 +53,15 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
             {
                 continue;
             }
-            
-            featureToAdd.Environments.Add(new FeatureEnvironment
-            {
-                Feature = featureToAdd,
-                Environment = existingEnvironment,
-                IsEnabled = environment.IsEnabled,
-                Id = Guid.NewGuid(),
-            });
+
+            featureToAdd.Environments.Add(
+                new FeatureEnvironment
+                {
+                    Feature = featureToAdd,
+                    Environment = existingEnvironment,
+                    IsEnabled = environment.IsEnabled,
+                    Id = Guid.NewGuid(),
+                });
         }
 
         await context.Features.AddAsync(featureToAdd);
@@ -74,14 +75,14 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         var featureExist = context.Features.SingleOrDefaultAsync(x => x.Id == featureId && x.Owner.Id == userId);
         var environmentExist = context.Environments.SingleOrDefaultAsync(x => x.Id == environmentId && x.Owner.Id == userId);
         var featureEnvironmentExist = context.FeatureEnvironments.AnyAsync(x => x.Feature.Id == featureId && x.Environment.Id == environmentId);
-        
+
 
         Task.WaitAll(featureExist, environmentExist, featureEnvironmentExist);
         if (featureExist.Result == null || environmentExist.Result == null)
         {
             return (false, "Feature or environment not found");
         }
-        
+
         if (featureEnvironmentExist.Result)
         {
             return (false, "Feature environment already exists");
@@ -157,25 +158,53 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         return (true, environment.Id, "Environment added");
     }
 
-    public async Task<(bool wasFound, List<Environment> environments, string reason)> GetEnvironmentsAsync(Guid userId)
+    public async Task<(bool wasFound, List<Model.Environment> environments, string reason)> GetEnvironmentsAsync(Guid userId)
     {
         var environments = await context.Environments.Where(x => x.Owner.Id == userId).ToListAsync();
 
-        return (environments.Count != 0, environments, environments.Count != 0 ? "Environments found" : "No environments found");
+        return (environments.Count != 0, environments.Select(
+            x => new Model.Environment
+            {
+                Id = x.Id,
+                Name = x.Name,
+            }).ToList(), environments.Count != 0 ? "Environments found" : "No environments found");
     }
 
-    public async Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid userId)
+    public async Task<(bool wasFound, List<Model.Feature> features, string reason)> GetFeaturesAsync(Guid userId)
     {
         var features = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).Where(x => x.Owner.Id == userId).ToListAsync();
 
-        return (features.Count != 0, features, features.Count != 0 ? "Features found" : "No features found");
+        return (features.Count != 0, features.Select(
+            x => new Model.Feature
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Key = x.Key,
+                Description = x.Description,
+                Environments = x.Environments.OrderBy(e => e.Environment.Name).Select(y => new Model.FeatureEnvironment(y.IsEnabled, y.Environment.Name, y.Environment.Id)).ToList(),
+            }).ToList(), features.Count != 0 ? "Features found" : "No features found");
     }
 
-    public async Task<(bool wasFound, Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId)
+    public async Task<(bool wasFound, Model.Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId)
     {
         var feature = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).SingleOrDefaultAsync(x => x.Id == id && x.Owner.Id == userId);
-        
-        return (feature != null, feature, feature != null ? "Feature found" : "Feature not found");
+
+        if (feature == null)
+        {
+            return (false, null, "Feature not found");
+        }
+
+        feature.Environments = feature.Environments.OrderBy(x => x.Environment.Name).ToList();
+
+        return (true, new Model.Feature
+        {
+            Id = feature.Id,
+            Name = feature.Name,
+            Key = feature.Key,
+            Description = feature.Description,
+            Environments = feature.Environments.Select(
+                y => new Model.FeatureEnvironment(y.IsEnabled, y.Environment.Name, y.Environment.Id)).ToList(),
+        }, "Feature found");
     }
 
     public async Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Model.Feature feature, Guid userId)
@@ -186,16 +215,16 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
         {
             return (false, "Feature not found");
         }
-        
+
         existingFeature.Name = feature.Name;
         existingFeature.Key = feature.Key;
         existingFeature.Description = feature.Description;
         var existingEnvironments = existingFeature.Environments.Select(x => x.Environment.Id).ToList();
         var newEnvironments = feature.Environments.Select(x => x.EnvironmentId).ToList();
-        
+
         var environmentsToAdd = newEnvironments.Except(existingEnvironments).ToList();
         var environmentsToRemove = existingEnvironments.Except(newEnvironments).ToList();
-        
+
         foreach (var environmentId in environmentsToAdd)
         {
             var environment = await context.Environments.SingleOrDefaultAsync(x => x.Id == environmentId);
@@ -203,15 +232,16 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
             {
                 return (false, "Environment not found");
             }
-            
-            existingFeature.Environments.Add(new FeatureEnvironment
-            {
-                Feature = existingFeature,
-                Environment = environment,
-                IsEnabled = feature.Environments.Single(x => x.EnvironmentId == environmentId).IsEnabled,
-            });
+
+            existingFeature.Environments.Add(
+                new FeatureEnvironment
+                {
+                    Feature = existingFeature,
+                    Environment = environment,
+                    IsEnabled = feature.Environments.Single(x => x.EnvironmentId == environmentId).IsEnabled,
+                });
         }
-        
+
         foreach (var environmentId in environmentsToRemove)
         {
             var featureEnvironment = existingFeature.Environments.SingleOrDefault(x => x.Environment.Id == environmentId);
@@ -219,51 +249,60 @@ public sealed class FeatureRepository(AppDbContext context) : IRepository
             {
                 continue;
             }
-            
+
             existingFeature.Environments.Remove(featureEnvironment);
         }
-        
+
         await context.SaveChangesAsync();
-        
+
         return (true, "Feature updated");
     }
 
-    public Task<(bool wasFound, Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId)
+    public async Task<(bool wasFound, Model.Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId)
     {
-        var environment = context.Environments.SingleOrDefault(x => x.Id == id && x.Owner.Id == userId);
-        
-        return Task.FromResult((environment != null, environment, environment != null ? "Environment found" : "Environment not found"));
+        var environment = await context.Environments.SingleOrDefaultAsync(x => x.Id == id && x.Owner.Id == userId);
+
+        if (environment == null)
+        {
+            return (false, null, "Environment not found");
+        }
+
+        return (true, new Model.Environment
+        {
+            Id = environment.Id,
+            Name = environment.Name,
+        }, "Environment found");
     }
 
     public async Task<(bool wasUpdated, string reason)> UpdateEnvironmentAsync(Model.Environment environment, Guid userId)
     {
         var existingEnvironment = await context.Environments.SingleOrDefaultAsync(x => x.Id == environment.Id && x.Owner.Id == userId);
-        
+
         if (existingEnvironment == null)
         {
             return (false, "Environment not found");
         }
-        
+
         existingEnvironment.Name = environment.Name;
 
         await context.SaveChangesAsync();
-        
+
         return (true, "Environment updated");
     }
 
     public async Task<(bool deleted, string reason)> DeleteEnvironmentAsync(Guid id, Guid userId)
     {
         var environment = await context.Environments.SingleOrDefaultAsync(x => x.Id == id && x.Owner.Id == userId);
-        
+
         if (environment == null)
         {
             return (false, "Environment not found");
         }
-        
+
         context.Environments.Remove(environment);
-        
+
         await context.SaveChangesAsync();
-        
+
         return (true, "Environment deleted");
     }
 
