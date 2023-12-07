@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Switcharoo.Database.Migrations
+namespace Switcharoo.Database.Migrations.Sqlite
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -181,6 +181,7 @@ namespace Switcharoo.Database.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Key = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
                     OwnerId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },

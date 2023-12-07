@@ -12,7 +12,31 @@ builder.Services.AddAuthorizationBuilder();
 
 var httpOnly = builder.Configuration.GetSection("HTTP_Only").Get<bool?>() ?? false;
 
-builder.Services.AddDbContext<AppDbContext>(x => x.UseSqlite(builder.Configuration.GetConnectionString("SwitcharooDb")));
+var dbType = builder.Configuration["DbType"];
+
+if (dbType != null && dbType.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddDbContext<BaseDbContext, PostgresDbContext>(x => x.UseNpgsql(builder.Configuration.GetConnectionString("SwitcharooDb")));
+    builder.Services.AddIdentityCore<User>()
+        .AddEntityFrameworkStores<PostgresDbContext>()
+        .AddApiEndpoints();
+}
+else if (dbType != null && (dbType.Equals("MariaDB", StringComparison.OrdinalIgnoreCase) || dbType.Equals("MySQL", StringComparison.OrdinalIgnoreCase)))
+{
+    var version = builder.Configuration["MyMariaVersion"];
+    ServerVersion serverVersion = dbType.Equals("MariaDB", StringComparison.OrdinalIgnoreCase) ? new MariaDbServerVersion(version) : new MySqlServerVersion(version);
+    builder.Services.AddDbContext<BaseDbContext, MariaDbContext>(x => x.UseMySql(builder.Configuration.GetConnectionString("SwitcharooDb"), serverVersion));
+    builder.Services.AddIdentityCore<User>()
+        .AddEntityFrameworkStores<MariaDbContext>()
+        .AddApiEndpoints();
+}
+else
+{
+    builder.Services.AddDbContext<BaseDbContext, SqliteDbContext>(x => x.UseSqlite(builder.Configuration.GetConnectionString("SwitcharooDb")));
+    builder.Services.AddIdentityCore<User>()
+        .AddEntityFrameworkStores<SqliteDbContext>()
+        .AddApiEndpoints();
+}
 
 builder.Services.AddCors(
     options => options.AddPolicy(
@@ -31,10 +55,6 @@ builder.Services.AddCors(
                 .AllowCredentials()
                 .SetIsOriginAllowedToAllowWildcardSubdomains();
         }));
-
-builder.Services.AddIdentityCore<User>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddApiEndpoints();
 
 builder.Services.AddScoped<IFeatureProvider, FeatureProvider>();
 builder.Services.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
