@@ -6,7 +6,7 @@ using Environment = Switcharoo.Entities.Environment;
 
 namespace Switcharoo;
 
-public sealed class FeatureRepository(AppDbContext context) : IRepository
+public sealed class FeatureRepository(BaseDbContext context) : IRepository
 {
     public async Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureKey, Guid environmentId)
     {

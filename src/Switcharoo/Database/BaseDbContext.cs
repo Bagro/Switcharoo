@@ -6,16 +6,12 @@ using Environment = Switcharoo.Entities.Environment;
 
 namespace Switcharoo.Database;
 
-public sealed class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
+public abstract class BaseDbContext(DbContextOptions options) : IdentityDbContext<User, IdentityRole<Guid>, Guid>(options)
 {
     public DbSet<Environment> Environments { get; set; }
     public DbSet<Feature> Features { get; set; }
     public DbSet<FeatureEnvironment> FeatureEnvironments { get; set; }
     
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.Entity<Environment>().HasKey(x => x.Id);
