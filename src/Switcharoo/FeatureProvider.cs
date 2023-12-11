@@ -5,14 +5,14 @@ namespace Switcharoo;
 
 public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
 {
-    public async Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureKey, Guid environmentId)
+    public Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureKey, Guid environmentId)
     {
-        return await repository.GetFeatureStateAsync(featureKey, environmentId);
+        return repository.GetFeatureStateAsync(featureKey, environmentId);
     }
 
-    public async Task<(bool isActive, bool wasChanged, string reason)> ToggleFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
+    public Task<(bool isActive, bool wasChanged, string reason)> ToggleFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
     {
-        return await repository.ToggleFeatureAsync(featureId, environmentId, userId);
+        return repository.ToggleFeatureAsync(featureId, environmentId, userId);
     }
 
     public async Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(Feature feature, Guid userId)
@@ -35,21 +35,20 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         return await repository.AddFeatureAsync(feature, userId);
     }
 
-    public async Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
+    public Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
     {
-        return await repository.AddEnvironmentToFeatureAsync(featureId, environmentId, userId);
+        return repository.AddEnvironmentToFeatureAsync(featureId, environmentId, userId);
     }
 
-    public async Task<(bool deleted, string reason)> DeleteFeatureAsync(Guid featureId, Guid userId)
+    public Task<(bool deleted, string reason)> DeleteFeatureAsync(Guid featureId, Guid userId)
     {
-        return await repository.DeleteFeatureAsync(featureId, userId);
+        return repository.DeleteFeatureAsync(featureId, userId);
     }
 
-    public async Task<(bool deleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
+    public  Task<(bool deleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
     {
-        return await repository.DeleteEnvironmentFromFeatureAsync(featureId, environmentId, userId);
+        return repository.DeleteEnvironmentFromFeatureAsync(featureId, environmentId, userId);
     }
-
 
     public async Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid userId)
     {
@@ -58,16 +57,9 @@ public sealed class FeatureProvider(IRepository repository) : IFeatureProvider
         return (result.wasFound, result.features, result.reason);
     }
 
-    public async Task<(bool wasFound, Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId)
+    public  Task<(bool wasFound, Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId)
     {
-        var result = await repository.GetFeatureAsync(id, userId);
-
-        if (!result.wasFound || result.feature == null)
-        {
-            return (result.wasFound, null, result.reason);
-        }
-
-        return (result.wasFound, result.feature, result.reason);
+        return repository.GetFeatureAsync(id, userId);
     }
 
     public async Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Feature feature, Guid userId)

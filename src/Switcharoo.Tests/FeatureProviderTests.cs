@@ -80,10 +80,10 @@ public sealed class FeatureProviderTests
         var repository = Substitute.For<IRepository>();
         repository.GetFeatureStateAsync(Arg.Any<string>(), Arg.Any<Guid>())
             .Returns((false, true));
-        var sut = new FeatureProvider(repository);
+        var featureProvider = new FeatureProvider(repository);
 
         // Act
-        var result = await sut.GetFeatureStateAsync("featureKey", Guid.NewGuid());
+        var result = await featureProvider.GetFeatureStateAsync("featureKey", Guid.NewGuid());
 
         // Assert
         result.isActive.Should().BeFalse();
@@ -96,10 +96,10 @@ public sealed class FeatureProviderTests
         var repository = Substitute.For<IRepository>();
         repository.GetFeatureStateAsync(Arg.Any<string>(), Arg.Any<Guid>())
             .Returns((false, false));
-        var sut = new FeatureProvider(repository);
+        var featureProvider = new FeatureProvider(repository);
 
         // Act
-        var result = await sut.GetFeatureStateAsync("featureKey", Guid.NewGuid());
+        var result = await featureProvider.GetFeatureStateAsync("featureKey", Guid.NewGuid());
 
         // Assert
         result.wasFound.Should().BeFalse();

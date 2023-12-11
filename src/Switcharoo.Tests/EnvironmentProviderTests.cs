@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Switcharoo.Tests;
 
+
 public sealed class EnvironmentProviderTests
 {
     private readonly EnvironmentProvider _environmentProvider;

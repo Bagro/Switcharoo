@@ -10,34 +10,19 @@ public sealed class EnvironmentProvider(IRepository repository) : IEnvironmentPr
             return await repository.AddEnvironmentAsync(environmentName, userId);
         }
     
-        public async Task<(bool wasFound, List<Environment> environments, string reason)> GetEnvironmentsAsync(Guid userId)
+        public Task<(bool wasFound, List<Environment> environments, string reason)> GetEnvironmentsAsync(Guid userId)
         {
-            var result = await repository.GetEnvironmentsAsync(userId);
-    
-            var environments = result.environments.Select(x => new Environment { Id = x.Id, Name = x.Name }).ToList();
-    
-            return (result.wasFound, environments, result.reason);
+            return repository.GetEnvironmentsAsync(userId);
         }
         
-        public async Task<(bool wasFound, Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId)
+        public Task<(bool wasFound, Environment? environment, string reason)> GetEnvironmentAsync(Guid id, Guid userId)
         {
-            var result = await repository.GetEnvironmentAsync(id, userId);
-
-            if (!result.wasFound || result.environment == null)
-            {
-                return (result.wasFound, null, result.reason);
-            }
-
-            var environment = new Environment{ Id = result.environment.Id, Name = result.environment.Name };
-        
-            return (result.wasFound, environment, result.reason);
+            return repository.GetEnvironmentAsync(id, userId);
         }
 
-        public async Task<(bool wasUpdated, string reason)> UpdateEnvironmentAsync(Environment environment, Guid userId)
+        public Task<(bool wasUpdated, string reason)> UpdateEnvironmentAsync(Environment environment, Guid userId)
         {
-            var result = await repository.UpdateEnvironmentAsync(environment, userId);
-        
-            return (result.wasUpdated, result.reason);
+            return repository.UpdateEnvironmentAsync(environment, userId);
         }
 
         public async Task<(bool deleted, string reason)> DeleteEnvironmentAsync(Guid id, Guid userId)
