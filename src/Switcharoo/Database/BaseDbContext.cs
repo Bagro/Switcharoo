@@ -12,6 +12,8 @@ public abstract class BaseDbContext(DbContextOptions options) : IdentityDbContex
     public DbSet<Feature> Features { get; set; }
     public DbSet<FeatureEnvironment> FeatureEnvironments { get; set; }
     
+    public DbSet<Team> Teams { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.Entity<Environment>().HasKey(x => x.Id);
@@ -27,6 +29,20 @@ public abstract class BaseDbContext(DbContextOptions options) : IdentityDbContex
         builder.Entity<FeatureEnvironment>().Property(x => x.IsEnabled).IsRequired();
         builder.Entity<FeatureEnvironment>().HasOne(x => x.Environment).WithMany(x => x.Features);
         builder.Entity<FeatureEnvironment>().HasOne(x => x.Feature).WithMany(x => x.Environments);
+        
+        builder.Entity<Team>().HasKey(x => x.Id);
+        builder.Entity<Team>().Property(x => x.Name).IsRequired();
+        builder.Entity<Team>().HasMany(x => x.Members).WithOne(x => x.Team);
+        builder.Entity<Team>().HasMany(x => x.Features).WithOne(x => x.Team);
+        builder.Entity<Team>().HasMany(x => x.Environments).WithOne(x => x.Team);
+        
+        builder.Entity<TeamEnvironment>().HasKey(x => x.Id);
+        builder.Entity<TeamEnvironment>().HasOne(x => x.Team).WithMany(x => x.Environments);
+        
+        builder.Entity<TeamFeature>().HasKey(x => x.Id);
+        builder.Entity<TeamFeature>().HasOne(x => x.Team).WithMany(x => x.Features);
+
+        builder.Entity<TeamInvite>().HasKey(x => x.InviteCode);
         
         base.OnModelCreating(builder);
     }
