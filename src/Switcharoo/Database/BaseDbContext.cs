@@ -14,6 +14,12 @@ public abstract class BaseDbContext(DbContextOptions options) : IdentityDbContex
     
     public DbSet<Team> Teams { get; set; }
     
+    public DbSet<TeamEnvironment> TeamEnvironments { get; set; }
+    
+    public DbSet<TeamFeature> TeamFeatures { get; set; }
+    
+    public DbSet<TeamInvite> TeamInvites { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.Entity<Environment>().HasKey(x => x.Id);

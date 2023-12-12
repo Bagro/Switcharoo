@@ -1,9 +1,10 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Switcharoo.Database.Migrations.Sqlite
+namespace Switcharoo.Database.Migrations.Postgres
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -15,10 +16,10 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -29,11 +30,11 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    RoleId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ClaimType = table.Column<string>(type: "TEXT", nullable: true),
-                    ClaimValue = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -50,11 +51,11 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ClaimType = table.Column<string>(type: "TEXT", nullable: true),
-                    ClaimValue = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -65,10 +66,10 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
-                    ProviderKey = table.Column<string>(type: "TEXT", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "TEXT", nullable: true),
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -79,8 +80,8 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    RoleId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -97,10 +98,10 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Value = table.Column<string>(type: "TEXT", nullable: true)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -111,22 +112,22 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    TeamId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
-                    PasswordHash = table.Column<string>(type: "TEXT", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "TEXT", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "TEXT", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TeamId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -137,9 +138,9 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "Environments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    OwnerId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    OwnerId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -156,11 +157,11 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "Features",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Key = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    OwnerId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Key = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    OwnerId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -177,12 +178,12 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "Teams",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    AllCanManage = table.Column<bool>(type: "INTEGER", nullable: false),
-                    InviteOnly = table.Column<bool>(type: "INTEGER", nullable: false),
-                    OwnerId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    AllCanManage = table.Column<bool>(type: "boolean", nullable: false),
+                    InviteOnly = table.Column<bool>(type: "boolean", nullable: false),
+                    OwnerId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -199,10 +200,10 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "FeatureEnvironments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    IsEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    FeatureId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    EnvironmentId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    FeatureId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EnvironmentId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -222,25 +223,25 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 });
 
             migrationBuilder.CreateTable(
-                name: "TeamEnvironment",
+                name: "TeamEnvironments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    IsReadOnly = table.Column<bool>(type: "INTEGER", nullable: false),
-                    TeamId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    EnvironmentId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsReadOnly = table.Column<bool>(type: "boolean", nullable: false),
+                    TeamId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EnvironmentId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TeamEnvironment", x => x.Id);
+                    table.PrimaryKey("PK_TeamEnvironments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TeamEnvironment_Environments_EnvironmentId",
+                        name: "FK_TeamEnvironments_Environments_EnvironmentId",
                         column: x => x.EnvironmentId,
                         principalTable: "Environments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TeamEnvironment_Teams_TeamId",
+                        name: "FK_TeamEnvironments_Teams_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id",
@@ -248,26 +249,26 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 });
 
             migrationBuilder.CreateTable(
-                name: "TeamFeature",
+                name: "TeamFeatures",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    IsReadOnly = table.Column<bool>(type: "INTEGER", nullable: false),
-                    AllCanToggle = table.Column<bool>(type: "INTEGER", nullable: false),
-                    TeamId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    FeatureId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsReadOnly = table.Column<bool>(type: "boolean", nullable: false),
+                    AllCanToggle = table.Column<bool>(type: "boolean", nullable: false),
+                    TeamId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FeatureId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TeamFeature", x => x.Id);
+                    table.PrimaryKey("PK_TeamFeatures", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TeamFeature_Features_FeatureId",
+                        name: "FK_TeamFeatures_Features_FeatureId",
                         column: x => x.FeatureId,
                         principalTable: "Features",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TeamFeature_Teams_TeamId",
+                        name: "FK_TeamFeatures_Teams_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id",
@@ -275,33 +276,33 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 });
 
             migrationBuilder.CreateTable(
-                name: "TeamInvite",
+                name: "TeamInvites",
                 columns: table => new
                 {
-                    InviteCode = table.Column<Guid>(type: "TEXT", nullable: false),
-                    TeamId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    InvitedById = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ActivatedByUserId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    ExpiresAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    ActivatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: true)
+                    InviteCode = table.Column<Guid>(type: "uuid", nullable: false),
+                    TeamId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InvitedById = table.Column<Guid>(type: "uuid", nullable: false),
+                    ActivatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ActivatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TeamInvite", x => x.InviteCode);
+                    table.PrimaryKey("PK_TeamInvites", x => x.InviteCode);
                     table.ForeignKey(
-                        name: "FK_TeamInvite_AspNetUsers_ActivatedByUserId",
+                        name: "FK_TeamInvites_AspNetUsers_ActivatedByUserId",
                         column: x => x.ActivatedByUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_TeamInvite_AspNetUsers_InvitedById",
+                        name: "FK_TeamInvites_AspNetUsers_InvitedById",
                         column: x => x.InvitedById,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TeamInvite_Teams_TeamId",
+                        name: "FK_TeamInvites_Teams_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id",
@@ -371,38 +372,38 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 column: "OwnerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamEnvironment_EnvironmentId",
-                table: "TeamEnvironment",
+                name: "IX_TeamEnvironments_EnvironmentId",
+                table: "TeamEnvironments",
                 column: "EnvironmentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamEnvironment_TeamId",
-                table: "TeamEnvironment",
+                name: "IX_TeamEnvironments_TeamId",
+                table: "TeamEnvironments",
                 column: "TeamId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamFeature_FeatureId",
-                table: "TeamFeature",
+                name: "IX_TeamFeatures_FeatureId",
+                table: "TeamFeatures",
                 column: "FeatureId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamFeature_TeamId",
-                table: "TeamFeature",
+                name: "IX_TeamFeatures_TeamId",
+                table: "TeamFeatures",
                 column: "TeamId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamInvite_ActivatedByUserId",
-                table: "TeamInvite",
+                name: "IX_TeamInvites_ActivatedByUserId",
+                table: "TeamInvites",
                 column: "ActivatedByUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamInvite_InvitedById",
-                table: "TeamInvite",
+                name: "IX_TeamInvites_InvitedById",
+                table: "TeamInvites",
                 column: "InvitedById");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamInvite_TeamId",
-                table: "TeamInvite",
+                name: "IX_TeamInvites_TeamId",
+                table: "TeamInvites",
                 column: "TeamId");
 
             migrationBuilder.CreateIndex(
@@ -476,13 +477,13 @@ namespace Switcharoo.Database.Migrations.Sqlite
                 name: "FeatureEnvironments");
 
             migrationBuilder.DropTable(
-                name: "TeamEnvironment");
+                name: "TeamEnvironments");
 
             migrationBuilder.DropTable(
-                name: "TeamFeature");
+                name: "TeamFeatures");
 
             migrationBuilder.DropTable(
-                name: "TeamInvite");
+                name: "TeamInvites");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

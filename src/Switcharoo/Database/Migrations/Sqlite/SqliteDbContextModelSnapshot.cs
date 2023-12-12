@@ -266,7 +266,7 @@ namespace Switcharoo.Database.Migrations.Sqlite
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("TeamEnvironment");
+                    b.ToTable("TeamEnvironments");
                 });
 
             modelBuilder.Entity("Switcharoo.Entities.TeamFeature", b =>
@@ -293,7 +293,7 @@ namespace Switcharoo.Database.Migrations.Sqlite
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("TeamFeature");
+                    b.ToTable("TeamFeatures");
                 });
 
             modelBuilder.Entity("Switcharoo.Entities.TeamInvite", b =>
@@ -328,7 +328,7 @@ namespace Switcharoo.Database.Migrations.Sqlite
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("TeamInvite");
+                    b.ToTable("TeamInvites");
                 });
 
             modelBuilder.Entity("Switcharoo.Entities.User", b =>
