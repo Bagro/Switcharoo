@@ -4,6 +4,8 @@ using Switcharoo;
 using Switcharoo.Database;
 using Switcharoo.Entities;
 using Switcharoo.Interfaces;
+using Switcharoo.Providers;
+using Switcharoo.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,7 +60,8 @@ builder.Services.AddCors(
 
 builder.Services.AddScoped<IFeatureProvider, FeatureProvider>();
 builder.Services.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
-builder.Services.AddScoped<IRepository, FeatureRepository>();
+builder.Services.AddScoped<IFeatureRepository, FeatureFeatureRepository>();
+builder.Services.AddScoped<IEnvironmentRepository, EnvironmentRepository>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

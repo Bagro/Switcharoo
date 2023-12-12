@@ -2,20 +2,21 @@
 using NSubstitute;
 using Switcharoo.Model;
 using Switcharoo.Interfaces;
+using Switcharoo.Providers;
 using Xunit;
 
 namespace Switcharoo.Tests;
 
 public sealed class FeatureProviderTests
 {
-    private readonly IRepository _repository;
+    private readonly IFeatureRepository _featureRepository;
     private readonly FeatureProvider _featureProvider;
 
     public FeatureProviderTests()
     {
-        _repository = Substitute.For<IRepository>();
+        _featureRepository = Substitute.For<IFeatureRepository>();
 
-        _featureProvider = new FeatureProvider(_repository);
+        _featureProvider = new FeatureProvider(_featureRepository);
     }
 
     [Fact]
@@ -61,7 +62,7 @@ public sealed class FeatureProviderTests
     public async Task GetFeatureStateAsync_ActiveFeature_ReturnsIsActiveTrue()
     {
         // Arrange
-        var repository = Substitute.For<IRepository>();
+        var repository = Substitute.For<IFeatureRepository>();
         repository.GetFeatureStateAsync(Arg.Any<string>(), Arg.Any<Guid>())
             .Returns((true, true));
         var sut = new FeatureProvider(repository);
@@ -77,7 +78,7 @@ public sealed class FeatureProviderTests
     public async Task GetFeatureStateAsync_InactiveFeature_ReturnsIsActiveFalse()
     {
         // Arrange
-        var repository = Substitute.For<IRepository>();
+        var repository = Substitute.For<IFeatureRepository>();
         repository.GetFeatureStateAsync(Arg.Any<string>(), Arg.Any<Guid>())
             .Returns((false, true));
         var featureProvider = new FeatureProvider(repository);
@@ -93,7 +94,7 @@ public sealed class FeatureProviderTests
     public async Task GetFeatureStateAsync_FeatureNotFound_ReturnsWasFoundFalse()
     {
         // Arrange
-        var repository = Substitute.For<IRepository>();
+        var repository = Substitute.For<IFeatureRepository>();
         repository.GetFeatureStateAsync(Arg.Any<string>(), Arg.Any<Guid>())
             .Returns((false, false));
         var featureProvider = new FeatureProvider(repository);
@@ -128,7 +129,7 @@ public sealed class FeatureProviderTests
             }
         };
 
-        _repository.GetFeaturesAsync(userId).Returns((true, features, string.Empty));
+        _featureRepository.GetFeaturesAsync(userId).Returns((true, features, string.Empty));
 
         return userId;
     }

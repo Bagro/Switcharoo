@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using NSubstitute;
 using Switcharoo.Interfaces;
+using Switcharoo.Providers;
 using Xunit;
 
 namespace Switcharoo.Tests;
@@ -9,11 +10,11 @@ namespace Switcharoo.Tests;
 public sealed class EnvironmentProviderTests
 {
     private readonly EnvironmentProvider _environmentProvider;
-    private readonly IRepository? _repository;
+    private readonly IEnvironmentRepository? _repository;
 
     public EnvironmentProviderTests()
     {
-        _repository = Substitute.For<IRepository>();
+        _repository = Substitute.For<IEnvironmentRepository>();
         _environmentProvider = new EnvironmentProvider(_repository);
     }
     
