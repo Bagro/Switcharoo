@@ -33,4 +33,9 @@
       <None Remove="Database\db.sql" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Database\Migrations\MariaDB\" />
+      <Folder Include="Database\Migrations\Sqlite\" />
+    </ItemGroup>
+
 </Project>
