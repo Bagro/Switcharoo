@@ -60,7 +60,8 @@ builder.Services.AddCors(
 
 builder.Services.AddScoped<IFeatureProvider, FeatureProvider>();
 builder.Services.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
-builder.Services.AddScoped<IFeatureRepository, FeatureFeatureRepository>();
+builder.Services.AddScoped<ITeamProvider, TeamProvider>();
+builder.Services.AddScoped<IFeatureRepository, FeatureRepository>();
 builder.Services.AddScoped<IEnvironmentRepository, EnvironmentRepository>();
 
 // Add services to the container.

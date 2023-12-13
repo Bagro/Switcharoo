@@ -2,11 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Switcharoo.Database;
 using Switcharoo.Entities;
 using Switcharoo.Interfaces;
-using Environment = Switcharoo.Entities.Environment;
 
 namespace Switcharoo.Repositories;
 
-public sealed class FeatureFeatureRepository(BaseDbContext context) : IFeatureRepository
+public sealed class FeatureRepository(BaseDbContext context) : IFeatureRepository
 {
     public async Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureKey, Guid environmentId)
     {
