@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Switcharoo.Database;
+using Switcharoo.Database.Entities;
 using Switcharoo.Interfaces;
-using Switcharoo.Entities;
-using Environment = Switcharoo.Entities.Environment;
+using Environment = Switcharoo.Database.Entities.Environment;
 
 namespace Switcharoo.Repositories;
 

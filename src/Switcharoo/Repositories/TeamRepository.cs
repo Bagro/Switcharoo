@@ -2,9 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Switcharoo.Database;
 using Switcharoo.Interfaces;
 using Switcharoo.Model.Requests;
-using Team = Switcharoo.Entities.Team;
-using TeamEnvironment = Switcharoo.Entities.TeamEnvironment;
-using TeamFeature = Switcharoo.Entities.TeamFeature;
+using Team = Switcharoo.Database.Entities.Team;
+using TeamEnvironment = Switcharoo.Database.Entities.TeamEnvironment;
+using TeamFeature = Switcharoo.Database.Entities.TeamFeature;
 
 namespace Switcharoo.Repositories;
 

@@ -1,4 +1,4 @@
-namespace Switcharoo.Entities;
+namespace Switcharoo.Database.Entities;
 
 public sealed record Feature
 {

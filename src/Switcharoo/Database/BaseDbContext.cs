@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Switcharoo.Entities;
-using Environment = Switcharoo.Entities.Environment;
+using Switcharoo.Database.Entities;
+using Environment = Switcharoo.Database.Entities.Environment;
 
 namespace Switcharoo.Database;
 
