@@ -215,6 +215,122 @@ namespace Switcharoo.Database.Migrations.Sqlite
                     b.ToTable("FeatureEnvironments");
                 });
 
+            modelBuilder.Entity("Switcharoo.Entities.Team", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("AllCanManage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("InviteOnly")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Teams");
+                });
+
+            modelBuilder.Entity("Switcharoo.Entities.TeamEnvironment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("EnvironmentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsReadOnly")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnvironmentId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("TeamEnvironments");
+                });
+
+            modelBuilder.Entity("Switcharoo.Entities.TeamFeature", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("AllCanToggle")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("FeatureId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsReadOnly")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeatureId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("TeamFeatures");
+                });
+
+            modelBuilder.Entity("Switcharoo.Entities.TeamInvite", b =>
+                {
+                    b.Property<Guid>("InviteCode")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("ActivatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ActivatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("InvitedById")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("InviteCode");
+
+                    b.HasIndex("ActivatedByUserId");
+
+                    b.HasIndex("InvitedById");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("TeamInvites");
+                });
+
             modelBuilder.Entity("Switcharoo.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -261,6 +377,9 @@ namespace Switcharoo.Database.Migrations.Sqlite
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("TeamId")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("INTEGER");
 
@@ -276,6 +395,8 @@ namespace Switcharoo.Database.Migrations.Sqlite
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("TeamId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -372,6 +493,89 @@ namespace Switcharoo.Database.Migrations.Sqlite
                     b.Navigation("Feature");
                 });
 
+            modelBuilder.Entity("Switcharoo.Entities.Team", b =>
+                {
+                    b.HasOne("Switcharoo.Entities.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Switcharoo.Entities.TeamEnvironment", b =>
+                {
+                    b.HasOne("Switcharoo.Entities.Environment", "Environment")
+                        .WithMany()
+                        .HasForeignKey("EnvironmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Switcharoo.Entities.Team", "Team")
+                        .WithMany("Environments")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Environment");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("Switcharoo.Entities.TeamFeature", b =>
+                {
+                    b.HasOne("Switcharoo.Entities.Feature", "Feature")
+                        .WithMany()
+                        .HasForeignKey("FeatureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Switcharoo.Entities.Team", "Team")
+                        .WithMany("Features")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Feature");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("Switcharoo.Entities.TeamInvite", b =>
+                {
+                    b.HasOne("Switcharoo.Entities.User", "ActivatedByUser")
+                        .WithMany()
+                        .HasForeignKey("ActivatedByUserId");
+
+                    b.HasOne("Switcharoo.Entities.User", "InvitedBy")
+                        .WithMany()
+                        .HasForeignKey("InvitedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Switcharoo.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ActivatedByUser");
+
+                    b.Navigation("InvitedBy");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("Switcharoo.Entities.User", b =>
+                {
+                    b.HasOne("Switcharoo.Entities.Team", "Team")
+                        .WithMany("Members")
+                        .HasForeignKey("TeamId");
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("Switcharoo.Entities.Environment", b =>
                 {
                     b.Navigation("Features");
@@ -380,6 +584,15 @@ namespace Switcharoo.Database.Migrations.Sqlite
             modelBuilder.Entity("Switcharoo.Entities.Feature", b =>
                 {
                     b.Navigation("Environments");
+                });
+
+            modelBuilder.Entity("Switcharoo.Entities.Team", b =>
+                {
+                    b.Navigation("Environments");
+
+                    b.Navigation("Features");
+
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

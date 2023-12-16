@@ -49,15 +49,15 @@ public sealed class FeatureController(IFeatureProvider featureProvider) : Contro
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> UpdateFeatureAsync([FromBody] FeatureUpdateRequest featureUpdateRequest)
+    public async Task<IActionResult> UpdateFeatureAsync([FromBody] UpdateFeatureRequest updateFeatureRequest)
     {
         var feature = new Feature
         {
-            Id = featureUpdateRequest.Id,
-            Name = featureUpdateRequest.Name,
-            Key = featureUpdateRequest.Key,
-            Description = featureUpdateRequest.Description,
-            Environments = featureUpdateRequest.Environments
+            Id = updateFeatureRequest.Id,
+            Name = updateFeatureRequest.Name,
+            Key = updateFeatureRequest.Key,
+            Description = updateFeatureRequest.Description,
+            Environments = updateFeatureRequest.Environments
                 .Select(environment => new FeatureEnvironment(environment.IsEnabled, string.Empty, environment.Id))
                 .ToList(),
         };
