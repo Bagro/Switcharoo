@@ -4,6 +4,7 @@ using Switcharoo;
 using Switcharoo.Database;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
+using Switcharoo.Features.Environments;
 using Switcharoo.Features.Features;
 using Switcharoo.Features.Features.GetFeatures;
 using Switcharoo.Interfaces;
@@ -37,12 +38,12 @@ builder.Services.AddCors(
                 .SetIsOriginAllowedToAllowWildcardSubdomains();
         }));
 
-builder.Services.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
 builder.Services.AddScoped<ITeamProvider, TeamProvider>();
 builder.Services.AddScoped<IEnvironmentRepository, EnvironmentRepository>();
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 
 builder.Services.AddFeatures();
+builder.Services.AddEnvironments();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

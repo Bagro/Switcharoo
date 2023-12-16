@@ -12,5 +12,9 @@ public interface IEnvironmentRepository
     
     Task<(bool wasUpdated, string reason)> UpdateEnvironmentAsync(Model.Environment environment, Guid userId);
     
-    Task<(bool deleted, string reason)> DeleteEnvironmentAsync(Guid id, Guid userId);
+    Task<(bool wasDeleted, string reason)> DeleteEnvironmentAsync(Guid id, Guid userId);
+
+    Task<bool> IsNameAvailableAsync(string name, Guid userId);
+    
+    Task<bool> IsNameAvailableAsync(string name, Guid environmentId, Guid userId);
 }

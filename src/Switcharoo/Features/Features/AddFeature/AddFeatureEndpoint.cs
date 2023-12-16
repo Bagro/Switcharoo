@@ -14,7 +14,7 @@ public sealed class AddFeatureEndpoint : IEndpoint
             .RequireAuthorization()
             .WithName("AddFeature")
             .WithOpenApi()
-            .Produces<AddResponse>(StatusCodes.Status200OK)
+            .Produces<AddFeatureResponse>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status409Conflict);
     }
@@ -48,6 +48,6 @@ public sealed class AddFeatureEndpoint : IEndpoint
 
         var result = await featureRepository.AddFeatureAsync(feature, user.GetUserId());
      
-        return result.wasAdded ? Results.Ok(new AddResponse(request.Name, result.key)) : Results.BadRequest(result.reason);
+        return result.wasAdded ? Results.Ok(new AddFeatureResponse(request.Name, result.key)) : Results.BadRequest(result.reason);
     }
 }

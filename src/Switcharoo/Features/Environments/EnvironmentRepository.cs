@@ -4,17 +4,12 @@ using Switcharoo.Database.Entities;
 using Switcharoo.Interfaces;
 using Environment = Switcharoo.Database.Entities.Environment;
 
-namespace Switcharoo.Repositories;
+namespace Switcharoo.Features.Environments;
 
 public sealed class EnvironmentRepository(BaseDbContext context) : IEnvironmentRepository
 {
     public async Task<(bool wasAdded, Guid key, string reason)> AddEnvironmentAsync(string environmentName, Guid userId)
     {
-        if (await context.Environments.AnyAsync(x => x.Name == environmentName && x.Owner.Id == userId))
-        {
-            return (false, Guid.Empty, "Environment already exists");
-        }
-
         var user = await context.Users.SingleOrDefaultAsync(x => x.Id == userId);
 
         if (user == null)
@@ -75,7 +70,7 @@ public sealed class EnvironmentRepository(BaseDbContext context) : IEnvironmentR
         return (true, "Environment updated");
     }
 
-    public async Task<(bool deleted, string reason)> DeleteEnvironmentAsync(Guid id, Guid userId)
+    public async Task<(bool wasDeleted, string reason)> DeleteEnvironmentAsync(Guid id, Guid userId)
     {
         var environment = await context.Environments.SingleOrDefaultAsync(x => x.Id == id && x.Owner.Id == userId);
 
@@ -89,5 +84,15 @@ public sealed class EnvironmentRepository(BaseDbContext context) : IEnvironmentR
         await context.SaveChangesAsync();
 
         return (true, "Environment deleted");
+    }
+    
+    public async Task<bool> IsNameAvailableAsync(string name, Guid userId)
+    {
+        return !await context.Environments.AnyAsync(x => x.Owner.Id == userId && x.Name == name);
+    }
+
+    public async Task<bool> IsNameAvailableAsync(string name, Guid environmentId, Guid userId)
+    {
+        return !await context.Environments.AnyAsync(x => x.Owner.Id == userId && x.Id != environmentId && x.Name == name);
     }
 }
