@@ -5,6 +5,7 @@ using Switcharoo.Database;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
 using Switcharoo.Features.Features;
+using Switcharoo.Features.Features.GetFeatures;
 using Switcharoo.Interfaces;
 using Switcharoo.Providers;
 using Switcharoo.Repositories;
