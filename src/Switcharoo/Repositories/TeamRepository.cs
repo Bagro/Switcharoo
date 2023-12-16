@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Switcharoo.Database;
 using Switcharoo.Interfaces;
-using Switcharoo.Model;
 using Switcharoo.Model.Requests;
 using Team = Switcharoo.Entities.Team;
 using TeamEnvironment = Switcharoo.Entities.TeamEnvironment;
@@ -113,7 +112,7 @@ public sealed class TeamRepository(BaseDbContext context) : ITeamRepository
         var returnTeam = CreateReturnTeam(team);
 
         AddTeamMembersToReturnTeam(team, returnTeam);
-        AddEvironmentsToReturnTeam(team, returnTeam);
+        AddEnvironmentsToReturnTeam(team, returnTeam);
         AddFeaturesToReturnTeam(team, returnTeam);
         
         return (true, returnTeam, "Team found");
@@ -150,7 +149,7 @@ public sealed class TeamRepository(BaseDbContext context) : ITeamRepository
                 AddTeamMembersToReturnTeam(team, returnTeam);
             }
             
-            AddEvironmentsToReturnTeam(team, returnTeam);
+            AddEnvironmentsToReturnTeam(team, returnTeam);
             AddFeaturesToReturnTeam(team, returnTeam);
             
             returnTeams.Add(returnTeam);
@@ -190,7 +189,7 @@ public sealed class TeamRepository(BaseDbContext context) : ITeamRepository
         }
     }
 
-    private static void AddEvironmentsToReturnTeam(Team team, Model.Team returnTeam)
+    private static void AddEnvironmentsToReturnTeam(Team team, Model.Team returnTeam)
     {
         foreach (var teamEnvironment in team.Environments)
         {
