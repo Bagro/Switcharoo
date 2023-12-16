@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Switcharoo.Extensions;
+using Switcharoo.Features.Features.AddFeature;
 using Switcharoo.Interfaces;
 using Switcharoo.Model.Requests;
-using Switcharoo.Model.Responses;
 using Environment = Switcharoo.Model.Environment;
 
 namespace Switcharoo.Controllers;

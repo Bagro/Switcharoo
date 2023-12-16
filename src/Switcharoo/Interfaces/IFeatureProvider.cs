@@ -8,9 +8,9 @@ public interface IFeatureProvider
     
     Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureId, Guid environmentId, Guid userId);
     
-    Task<(bool deleted, string reason)> DeleteFeatureAsync(Guid featureId, Guid userId);
+    Task<(bool wasDeleted, string reason)> DeleteFeatureAsync(Guid featureId, Guid userId);
 
-    Task<(bool deleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureId, Guid environmentId, Guid userId);
+    Task<(bool wasDeleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureId, Guid environmentId, Guid userId);
     
     Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Feature feature, Guid userId);
 

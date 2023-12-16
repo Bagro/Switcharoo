@@ -3,7 +3,7 @@ using Switcharoo.Database;
 using Switcharoo.Entities;
 using Switcharoo.Interfaces;
 
-namespace Switcharoo.Repositories;
+namespace Switcharoo.Features.Features;
 
 public sealed class FeatureRepository(BaseDbContext context) : IFeatureRepository
 {
@@ -66,7 +66,7 @@ public sealed class FeatureRepository(BaseDbContext context) : IFeatureRepositor
         await context.Features.AddAsync(featureToAdd);
         await context.SaveChangesAsync();
 
-        return (true, feature.Id, "Feature added");
+        return (true, featureToAdd.Id, "Feature added");
     }
 
     public async Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
@@ -96,7 +96,7 @@ public sealed class FeatureRepository(BaseDbContext context) : IFeatureRepositor
         return (true, "Feature environment added");
     }
 
-    public async Task<(bool deleted, string reason)> DeleteFeatureAsync(Guid featureId, Guid userId)
+    public async Task<(bool wasDeleted, string reason)> DeleteFeatureAsync(Guid featureId, Guid userId)
     {
         var feature = await context.Features.Include(x => x.Environments).SingleOrDefaultAsync(x => x.Id == featureId && x.Owner.Id == userId);
 
@@ -112,7 +112,7 @@ public sealed class FeatureRepository(BaseDbContext context) : IFeatureRepositor
         return (true, "Feature deleted");
     }
 
-    public async Task<(bool deleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
+    public async Task<(bool wasDeleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
     {
         var feature = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).SingleOrDefaultAsync(x => x.Id == featureId && x.Owner.Id == userId);
 

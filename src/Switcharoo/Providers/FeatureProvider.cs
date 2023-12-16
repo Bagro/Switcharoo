@@ -40,12 +40,12 @@ public sealed class FeatureProvider(IFeatureRepository featureRepository) : IFea
         return featureRepository.AddEnvironmentToFeatureAsync(featureId, environmentId, userId);
     }
 
-    public Task<(bool deleted, string reason)> DeleteFeatureAsync(Guid featureId, Guid userId)
+    public Task<(bool wasDeleted, string reason)> DeleteFeatureAsync(Guid featureId, Guid userId)
     {
         return featureRepository.DeleteFeatureAsync(featureId, userId);
     }
 
-    public  Task<(bool deleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
+    public  Task<(bool wasDeleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
     {
         return featureRepository.DeleteEnvironmentFromFeatureAsync(featureId, environmentId, userId);
     }

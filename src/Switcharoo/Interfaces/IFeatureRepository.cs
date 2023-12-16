@@ -13,9 +13,9 @@ public interface IFeatureRepository
 
     Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureId, Guid environmentId, Guid userId);
 
-    Task<(bool deleted, string reason)> DeleteFeatureAsync(Guid featureId, Guid userId);
+    Task<(bool wasDeleted, string reason)> DeleteFeatureAsync(Guid featureId, Guid userId);
 
-    Task<(bool deleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureId, Guid environmentId, Guid userId);
+    Task<(bool wasDeleted, string reason)> DeleteEnvironmentFromFeatureAsync(Guid featureId, Guid environmentId, Guid userId);
 
     Task<(bool wasFound, List<Feature> features, string reason)> GetFeaturesAsync(Guid userId);
 

@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Switcharoo;
 using Switcharoo.Database;
 using Switcharoo.Entities;
+using Switcharoo.Extensions;
+using Switcharoo.Features.Features;
 using Switcharoo.Interfaces;
 using Switcharoo.Providers;
 using Switcharoo.Repositories;
@@ -58,12 +60,12 @@ builder.Services.AddCors(
                 .SetIsOriginAllowedToAllowWildcardSubdomains();
         }));
 
-builder.Services.AddScoped<IFeatureProvider, FeatureProvider>();
 builder.Services.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
 builder.Services.AddScoped<ITeamProvider, TeamProvider>();
-builder.Services.AddScoped<IFeatureRepository, FeatureRepository>();
 builder.Services.AddScoped<IEnvironmentRepository, EnvironmentRepository>();
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+
+builder.Services.AddFeatures();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -92,6 +94,8 @@ if (!httpOnly)
 }
 
 app.MapGroup("auth").MapIdentityApi<User>();
+
+app.RegisterEndpoints();
 
 app.MapControllers();
 
