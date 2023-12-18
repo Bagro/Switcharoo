@@ -1,4 +1,4 @@
-using Switcharoo.Model;
+using Switcharoo.Features.Features.Model;
 
 namespace Switcharoo.Features.Features;
 

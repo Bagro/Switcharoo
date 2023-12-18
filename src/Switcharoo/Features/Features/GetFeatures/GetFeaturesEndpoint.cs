@@ -1,7 +1,8 @@
 using System.Security.Claims;
+using Switcharoo.Common;
 using Switcharoo.Extensions;
+using Switcharoo.Features.Features.Model;
 using Switcharoo.Interfaces;
-using Switcharoo.Model;
 
 namespace Switcharoo.Features.Features.GetFeatures;
 

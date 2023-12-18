@@ -1,4 +1,4 @@
-namespace Switcharoo.Model;
+namespace Switcharoo.Features.Features.Model;
 
 public sealed class Feature
 {

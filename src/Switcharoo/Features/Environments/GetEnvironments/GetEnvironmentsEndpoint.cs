@@ -1,7 +1,8 @@
 using System.Security.Claims;
+using Switcharoo.Common;
 using Switcharoo.Extensions;
 using Switcharoo.Interfaces;
-using Environment = Switcharoo.Model.Environment;
+using Environment = Switcharoo.Features.Environments.Model.Environment;
 
 namespace Switcharoo.Features.Environments.GetEnvironments;
 

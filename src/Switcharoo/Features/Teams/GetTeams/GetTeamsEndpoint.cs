@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Switcharoo.Common;
 using Switcharoo.Extensions;
 using Switcharoo.Features.Teams.Model;
 using Switcharoo.Features.Teams.Shared;

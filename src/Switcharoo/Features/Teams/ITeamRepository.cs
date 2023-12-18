@@ -1,6 +1,5 @@
 using Switcharoo.Database.Entities;
 using Switcharoo.Features.Teams.DeleteTeam;
-using Switcharoo.Model.Requests;
 using Environment = Switcharoo.Database.Entities.Environment;
 
 namespace Switcharoo.Interfaces;

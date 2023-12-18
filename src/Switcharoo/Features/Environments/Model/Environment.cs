@@ -1,4 +1,4 @@
-namespace Switcharoo.Model;
+namespace Switcharoo.Features.Environments.Model;
 
 public sealed class Environment
 {

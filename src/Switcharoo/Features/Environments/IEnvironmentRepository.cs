@@ -1,4 +1,4 @@
-using Environment = Switcharoo.Model.Environment;
+using Environment = Switcharoo.Features.Environments.Model.Environment;
 
 namespace Switcharoo.Features.Environments;
 

@@ -1,4 +1,5 @@
 using System.Reflection;
+using Switcharoo.Common;
 using Switcharoo.Interfaces;
 
 namespace Switcharoo.Extensions;

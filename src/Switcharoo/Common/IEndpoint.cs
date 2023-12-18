@@ -1,4 +1,4 @@
-namespace Switcharoo.Interfaces;
+namespace Switcharoo.Common;
 
 public interface IEndpoint
 {

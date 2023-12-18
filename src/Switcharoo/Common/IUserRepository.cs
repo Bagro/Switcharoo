@@ -1,6 +1,6 @@
 using Switcharoo.Database.Entities;
 
-namespace Switcharoo.Interfaces;
+namespace Switcharoo.Common;
 
 public interface IUserRepository
 {

@@ -1,3 +1,4 @@
+using Switcharoo.Common;
 using Switcharoo.Interfaces;
 
 namespace Switcharoo.Features.Features.GetFeatureState;
