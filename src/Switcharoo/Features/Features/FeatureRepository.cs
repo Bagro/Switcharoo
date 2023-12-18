@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Switcharoo.Database;
 using Switcharoo.Database.Entities;
-using Switcharoo.Interfaces;
 
 namespace Switcharoo.Features.Features;
 

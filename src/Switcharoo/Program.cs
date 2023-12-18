@@ -1,15 +1,12 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Switcharoo;
+using Switcharoo.Common;
 using Switcharoo.Database;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
 using Switcharoo.Features.Environments;
 using Switcharoo.Features.Features;
-using Switcharoo.Features.Features.GetFeatures;
+using Switcharoo.Features.Teams;
 using Switcharoo.Interfaces;
-using Switcharoo.Providers;
-using Switcharoo.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,18 +35,15 @@ builder.Services.AddCors(
                 .SetIsOriginAllowedToAllowWildcardSubdomains();
         }));
 
-builder.Services.AddScoped<ITeamProvider, TeamProvider>();
-builder.Services.AddScoped<IEnvironmentRepository, EnvironmentRepository>();
-builder.Services.AddScoped<ITeamRepository, TeamRepository>();
-
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddFeatures();
 builder.Services.AddEnvironments();
+builder.Services.AddTeams();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
 
 builder.Services.Configure<RouteOptions>(
     options =>
@@ -74,7 +68,5 @@ if (!httpOnly)
 app.MapGroup("auth").MapIdentityApi<User>();
 
 app.RegisterEndpoints();
-
-app.MapControllers();
 
 app.Run();

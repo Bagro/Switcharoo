@@ -1,5 +1,3 @@
-using Switcharoo.Interfaces;
-
 namespace Switcharoo.Features.Environments;
 
 public static class ServiceExtensions

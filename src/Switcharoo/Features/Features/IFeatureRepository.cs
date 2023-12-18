@@ -1,7 +1,6 @@
 using Switcharoo.Model;
-using Environment = Switcharoo.Model.Environment;
 
-namespace Switcharoo.Interfaces;
+namespace Switcharoo.Features.Features;
 
 public interface IFeatureRepository
 {

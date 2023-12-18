@@ -1,4 +1,3 @@
-using System.Net;
 using System.Security.Claims;
 using Switcharoo.Extensions;
 using Switcharoo.Interfaces;

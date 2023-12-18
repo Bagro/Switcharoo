@@ -1,4 +1,4 @@
-namespace Switcharoo.Model;
+namespace Switcharoo.Features.Teams.Model;
 
 public sealed record Team
 {
