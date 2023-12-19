@@ -6,7 +6,6 @@ using Switcharoo.Extensions;
 using Switcharoo.Features.Environments;
 using Switcharoo.Features.Features;
 using Switcharoo.Features.Teams;
-using Switcharoo.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

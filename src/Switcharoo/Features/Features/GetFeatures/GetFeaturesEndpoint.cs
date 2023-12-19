@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Switcharoo.Common;
 using Switcharoo.Extensions;
 using Switcharoo.Features.Features.Model;
-using Switcharoo.Interfaces;
 
 namespace Switcharoo.Features.Features.GetFeatures;
 
@@ -20,8 +19,20 @@ public sealed class GetFeaturesEndpoint : IEndpoint
 
     public static async Task<IResult> HandleAsync(ClaimsPrincipal user, IFeatureRepository featureRepository)
     {
-        var result = await featureRepository.GetFeaturesAsync(user.GetUserId());
+        var features = await featureRepository.GetFeaturesAsync(user.GetUserId());
         
-        return result.wasFound ? Results.Ok(result.features) : Results.NotFound(result.reason); 
+        var returnFeatures = features.Select(
+            x => new Feature
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Key = x.Key,
+                Description = x.Description,
+                Environments = x.Environments.OrderBy(e => e.Environment.Name).Select(y => new Model.FeatureEnvironment(y.IsEnabled, y.Environment.Name, y.Environment.Id)).ToList(),
+            }).ToList();
+        
+       return returnFeatures.Count == 0
+            ? Results.NotFound("No features found")
+            : Results.Ok(returnFeatures);
     }
 }

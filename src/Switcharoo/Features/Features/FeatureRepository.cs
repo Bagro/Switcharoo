@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Switcharoo.Database;
 using Switcharoo.Database.Entities;
+using Environment = Switcharoo.Database.Entities.Environment;
 
 namespace Switcharoo.Features.Features;
 
@@ -33,39 +34,11 @@ public sealed class FeatureRepository(BaseDbContext context) : IFeatureRepositor
         return (featureEnvironment.IsEnabled, true, "Feature toggled");
     }
 
-    public async Task<(bool wasAdded, Guid key, string reason)> AddFeatureAsync(Model.Feature feature, Guid userId)
+    public async Task AddFeatureAsync(Feature feature)
     {
-        var user = await context.Users.SingleOrDefaultAsync(x => x.Id == userId);
-
-        if (user == null)
-        {
-            return (false, Guid.Empty, "User not found");
-        }
-
-        var featureToAdd = new Feature { Id = Guid.NewGuid(), Name = feature.Name, Key = feature.Key, Description = feature.Description, Owner = user, Environments = new List<FeatureEnvironment>() };
-
-        foreach (var environment in feature.Environments)
-        {
-            var existingEnvironment = await context.Environments.FirstOrDefaultAsync(x => x.Id == environment.EnvironmentId && x.Owner.Id == userId);
-            if (existingEnvironment == null)
-            {
-                continue;
-            }
-
-            featureToAdd.Environments.Add(
-                new FeatureEnvironment
-                {
-                    Feature = featureToAdd,
-                    Environment = existingEnvironment,
-                    IsEnabled = environment.IsEnabled,
-                    Id = Guid.NewGuid(),
-                });
-        }
-
-        await context.Features.AddAsync(featureToAdd);
+        await context.Features.AddAsync(feature);
+        
         await context.SaveChangesAsync();
-
-        return (true, featureToAdd.Id, "Feature added");
     }
 
     public async Task<(bool wasAdded, string reason)> AddEnvironmentToFeatureAsync(Guid featureId, Guid environmentId, Guid userId)
@@ -135,92 +108,21 @@ public sealed class FeatureRepository(BaseDbContext context) : IFeatureRepositor
     }
   
 
-    public async Task<(bool wasFound, List<Model.Feature> features, string reason)> GetFeaturesAsync(Guid userId)
+    public Task<List<Feature>> GetFeaturesAsync(Guid userId)
     {
-        var features = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).Where(x => x.Owner.Id == userId).ToListAsync();
-
-        return (features.Count != 0, features.Select(
-            x => new Model.Feature
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Key = x.Key,
-                Description = x.Description,
-                Environments = x.Environments.OrderBy(e => e.Environment.Name).Select(y => new Model.FeatureEnvironment(y.IsEnabled, y.Environment.Name, y.Environment.Id)).ToList(),
-            }).ToList(), features.Count != 0 ? "Features found" : "No features found");
+        return context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).Where(x => x.Owner.Id == userId).ToListAsync();
     }
 
-    public async Task<(bool wasFound, Model.Feature? feature, string reason)> GetFeatureAsync(Guid id, Guid userId)
+    public Task<Feature?> GetFeatureAsync(Guid id, Guid userId)
     {
-        var feature = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).SingleOrDefaultAsync(x => x.Id == id && x.Owner.Id == userId);
-
-        if (feature == null)
-        {
-            return (false, null, "Feature not found");
-        }
-
-        feature.Environments = feature.Environments.OrderBy(x => x.Environment.Name).ToList();
-
-        return (true, new Model.Feature
-        {
-            Id = feature.Id,
-            Name = feature.Name,
-            Key = feature.Key,
-            Description = feature.Description,
-            Environments = feature.Environments.Select(
-                y => new Model.FeatureEnvironment(y.IsEnabled, y.Environment.Name, y.Environment.Id)).ToList(),
-        }, "Feature found");
+        return  context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).SingleOrDefaultAsync(x => x.Id == id && x.Owner.Id == userId);
     }
 
-    public async Task<(bool wasUpdated, string reason)> UpdateFeatureAsync(Model.Feature feature, Guid userId)
+    public async Task UpdateFeatureAsync(Feature feature)
     {
-        var existingFeature = await context.Features.Include(x => x.Environments).ThenInclude(x => x.Environment).SingleOrDefaultAsync(x => x.Id == feature.Id && x.Owner.Id == userId);
-
-        if (existingFeature == null)
-        {
-            return (false, "Feature not found");
-        }
-
-        existingFeature.Name = feature.Name;
-        existingFeature.Key = feature.Key;
-        existingFeature.Description = feature.Description;
-        var existingEnvironments = existingFeature.Environments.Select(x => x.Environment.Id).ToList();
-        var newEnvironments = feature.Environments.Select(x => x.EnvironmentId).ToList();
-
-        var environmentsToAdd = newEnvironments.Except(existingEnvironments).ToList();
-        var environmentsToRemove = existingEnvironments.Except(newEnvironments).ToList();
-
-        foreach (var environmentId in environmentsToAdd)
-        {
-            var environment = await context.Environments.SingleOrDefaultAsync(x => x.Id == environmentId);
-            if (environment == null)
-            {
-                return (false, "Environment not found");
-            }
-
-            existingFeature.Environments.Add(
-                new FeatureEnvironment
-                {
-                    Feature = existingFeature,
-                    Environment = environment,
-                    IsEnabled = feature.Environments.Single(x => x.EnvironmentId == environmentId).IsEnabled,
-                });
-        }
-
-        foreach (var environmentId in environmentsToRemove)
-        {
-            var featureEnvironment = existingFeature.Environments.SingleOrDefault(x => x.Environment.Id == environmentId);
-            if (featureEnvironment == null)
-            {
-                continue;
-            }
-
-            existingFeature.Environments.Remove(featureEnvironment);
-        }
+        context.Features.Update(feature);
 
         await context.SaveChangesAsync();
-
-        return (true, "Feature updated");
     }
 
     public async Task<bool> IsNameAvailableAsync(string name, Guid userId)
@@ -241,5 +143,10 @@ public sealed class FeatureRepository(BaseDbContext context) : IFeatureRepositor
     public async Task<bool> IsKeyAvailableAsync(string key, Guid featureId, Guid userId)
     {
         return !await context.Features.AnyAsync(x => x.Id != featureId && x.Owner.Id == userId && x.Key == key);
+    }
+
+    public Task<Environment?> GetEnvironmentAsync(Guid environmentId, Guid getUserId)
+    {
+        return context.Environments.SingleOrDefaultAsync(x => x.Id == environmentId && x.Owner.Id == getUserId);
     }
 }

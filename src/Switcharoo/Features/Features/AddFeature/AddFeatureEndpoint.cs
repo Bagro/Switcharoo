@@ -1,8 +1,7 @@
 using System.Security.Claims;
 using Switcharoo.Common;
+using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
-using Switcharoo.Features.Features.Model;
-using Switcharoo.Interfaces;
 
 namespace Switcharoo.Features.Features.AddFeature;
 
@@ -19,18 +18,17 @@ public sealed class AddFeatureEndpoint : IEndpoint
             .Produces<string>(StatusCodes.Status409Conflict);
     }
     
-    public static async Task<IResult> HandleAsync(AddFeatureRequest request, ClaimsPrincipal user, IFeatureRepository featureRepository, CancellationToken cancellationToken)
+    public static async Task<IResult> HandleAsync(AddFeatureRequest request, ClaimsPrincipal user, IFeatureRepository featureRepository, IUserRepository userRepository, CancellationToken cancellationToken)
     {
         var feature = new Feature
         {
+            Id = Guid.NewGuid(),
             Name = request.Name,
             Key = request.Key,
             Description = request.Description,
-            Environments = request.Environments?
-                .Select(environment => new FeatureEnvironment(environment.IsEnabled, string.Empty, environment.Id))
-                .ToList() ?? [],
+            Environments = [],
         };
-
+        
         if (!await featureRepository.IsNameAvailableAsync(feature.Name, user.GetUserId()))
         {
             return Results.Conflict("Name is already in use");
@@ -45,9 +43,37 @@ public sealed class AddFeatureEndpoint : IEndpoint
         {
             return Results.Conflict("Key is already in use");
         }
+        
+        var storedUser = await userRepository.GetUserAsync(user.GetUserId());
+        if (storedUser == null)
+        {
+            return Results.BadRequest("User not found");
+        }
+        
+        feature.Owner = storedUser;
 
-        var result = await featureRepository.AddFeatureAsync(feature, user.GetUserId());
+        if (request.Environments != null)
+        {
+            foreach (var environment in request.Environments)
+            {
+                var storedEnvironment = await featureRepository.GetEnvironmentAsync(environment.Id, user.GetUserId());
+                if (storedEnvironment == null)
+                {
+                    continue;
+                }
+
+                feature.Environments.Add(
+                    new FeatureEnvironment
+                    {
+                        Environment = storedEnvironment,
+                        Feature = feature,
+                        IsEnabled = environment.IsEnabled,
+                    });
+            }
+        }
+
+        await featureRepository.AddFeatureAsync(feature);
      
-        return result.wasAdded ? Results.Ok(new AddFeatureResponse(request.Name, result.key)) : Results.BadRequest(result.reason);
+        return  Results.Ok(new AddFeatureResponse(feature.Name, feature.Id));
     }
 }

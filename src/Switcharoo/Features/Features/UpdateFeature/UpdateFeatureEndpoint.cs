@@ -1,8 +1,7 @@
 using System.Security.Claims;
 using Switcharoo.Common;
+using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
-using Switcharoo.Features.Features.Model;
-using Switcharoo.Interfaces;
 
 namespace Switcharoo.Features.Features.UpdateFeature;
 
@@ -21,22 +20,22 @@ public sealed class UpdateFeatureEndpoint : IEndpoint
     
     public static async Task<IResult> HandleAsync(UpdateFeatureRequest updateFeatureRequest, ClaimsPrincipal user, IFeatureRepository featureRepository, CancellationToken cancellationToken)
     {
-        var feature = new Feature
-        {
-            Id = updateFeatureRequest.Id,
-            Name = updateFeatureRequest.Name,
-            Key = updateFeatureRequest.Key,
-            Description = updateFeatureRequest.Description,
-            Environments = updateFeatureRequest.Environments
-                .Select(environment => new FeatureEnvironment(environment.IsEnabled, string.Empty, environment.Id))
-                .ToList(),
-        };
-        
-        if (!await featureRepository.IsNameAvailableAsync(feature.Name, feature.Id, user.GetUserId()))
+        if (!await featureRepository.IsNameAvailableAsync(updateFeatureRequest.Name, updateFeatureRequest.Id, user.GetUserId()))
         {
             return Results.Conflict("Name is already in use");
         }
 
+        var feature = await featureRepository.GetFeatureAsync(updateFeatureRequest.Id, user.GetUserId());
+
+        if (feature is null)
+        {
+            return Results.NotFound("Feature not found");
+        }
+        
+        feature.Name = updateFeatureRequest.Name;
+        feature.Description = updateFeatureRequest.Description;
+        feature.Key = updateFeatureRequest.Key;
+        
         if (string.IsNullOrWhiteSpace(feature.Key))
         {
             feature.Key = feature.Name.Replace(" ", "-").ToLower();
@@ -46,9 +45,48 @@ public sealed class UpdateFeatureEndpoint : IEndpoint
         {
             return Results.Conflict("Key is already in use");
         }
+
+        await UpdateEnvironments(feature, updateFeatureRequest, user.GetUserId(), featureRepository);
         
-        var result = await featureRepository.UpdateFeatureAsync(feature, user.GetUserId());
+        await featureRepository.UpdateFeatureAsync(feature);
         
-        return result.wasUpdated ? Results.Ok() : Results.BadRequest(result.reason);
+        return Results.Ok();
+    }
+
+    private static async Task UpdateEnvironments(Feature feature, UpdateFeatureRequest updateFeatureRequest, Guid userId, IFeatureRepository featureRepository)
+    {
+        var existingEnvironments = feature.Environments.Select(x => x.Environment.Id).ToList();
+        var newEnvironments = updateFeatureRequest.Environments.Select(x => x.Id).ToList();
+
+        var environmentsToAdd = newEnvironments.Except(existingEnvironments).ToList();
+        var environmentsToRemove = existingEnvironments.Except(newEnvironments).ToList();
+
+        foreach (var environmentId in environmentsToAdd)
+        {
+            var environment = await featureRepository.GetEnvironmentAsync(environmentId, userId);
+            if (environment == null)
+            {
+                continue;
+            }
+
+            feature.Environments.Add(
+                new FeatureEnvironment
+                {
+                    Feature = feature,
+                    Environment = environment,
+                    IsEnabled = updateFeatureRequest.Environments.Single(x => x.Id == environmentId).IsEnabled,
+                });
+        }
+
+        foreach (var environmentId in environmentsToRemove)
+        {
+            var featureEnvironment = feature.Environments.SingleOrDefault(x => x.Environment.Id == environmentId);
+            if (featureEnvironment == null)
+            {
+                continue;
+            }
+
+            feature.Environments.Remove(featureEnvironment);
+        }
     }
 }
