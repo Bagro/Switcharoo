@@ -21,6 +21,17 @@ public sealed class GetEnvironmentEndpoint : IEndpoint
     {
         var environment = await environmentRepository.GetEnvironmentAsync(id, user.GetUserId());
         
-        return environment is null ? Results.NotFound("Environment not found") : Results.Ok(environment);
+        if (environment is null)
+        {
+            return Results.NotFound("Environment not found");
+        }
+        
+        var returnEnvironment = new Environment
+        {
+            Id = environment.Id,
+            Name = environment.Name,
+        };
+        
+        return Results.Ok(returnEnvironment);
     }
 }

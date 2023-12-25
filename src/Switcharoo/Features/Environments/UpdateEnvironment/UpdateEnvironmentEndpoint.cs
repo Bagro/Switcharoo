@@ -14,12 +14,18 @@ public sealed class UpdateEnvironmentEndpoint : IEndpoint
             .WithName("UpdateEnvironment")
             .WithOpenApi()
             .Produces(StatusCodes.Status200OK)
+            .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
             .Produces<string>(StatusCodes.Status409Conflict);
     }
     
     public static async Task<IResult> HandleAsync(Environment environment, ClaimsPrincipal user, IEnvironmentRepository environmentRepository, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(environment.Name))
+        {
+            return Results.BadRequest("Name cannot be empty");
+        }
+
         if (!await environmentRepository.IsNameAvailableAsync(environment.Name, environment.Id, user.GetUserId()))
         {
             return Results.Conflict("Name is already in use");
