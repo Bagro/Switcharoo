@@ -14,7 +14,7 @@ public sealed class UpdateEnvironmentEndpoint : IEndpoint
             .WithName("UpdateEnvironment")
             .WithOpenApi()
             .Produces(StatusCodes.Status200OK)
-            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces<string>(StatusCodes.Status404NotFound)
             .Produces<string>(StatusCodes.Status409Conflict);
     }
     
@@ -25,8 +25,17 @@ public sealed class UpdateEnvironmentEndpoint : IEndpoint
             return Results.Conflict("Name is already in use");
         }
         
-        var result = await environmentRepository.UpdateEnvironmentAsync(environment, user.GetUserId());
+        var storedEnvironment = await environmentRepository.GetEnvironmentAsync(environment.Id, user.GetUserId());
         
-        return result.wasUpdated ? Results.Ok() : Results.BadRequest(result.reason);
+        if (storedEnvironment is null)
+        {
+            return Results.NotFound("Environment not found");
+        }
+        
+        storedEnvironment.Name = environment.Name;
+        
+        await environmentRepository.UpdateEnvironmentAsync(storedEnvironment);
+        
+        return Results.Ok();
     }
 }

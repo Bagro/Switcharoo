@@ -19,8 +19,8 @@ public sealed class GetEnvironmentsEndpoint : IEndpoint
 
     public static async Task<IResult> HandleAsync(ClaimsPrincipal user, IEnvironmentRepository environmentRepository, CancellationToken cancellationToken)
     {
-        var result = await environmentRepository.GetEnvironmentsAsync(user.GetUserId());
+        var environments = await environmentRepository.GetEnvironmentsAsync(user.GetUserId());
 
-        return result.wasFound ? Results.Ok(result.environments) : Results.NotFound(result.reason);
+        return environments.Count > 0 ? Results.Ok(environments) : Results.NotFound("No environments found");
     }
 }

@@ -14,13 +14,13 @@ public sealed class GetEnvironmentEndpoint : IEndpoint
             .WithName("GetEnvironment")
             .WithOpenApi()
             .Produces<Environment>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces<string>(StatusCodes.Status404NotFound);
     }
     
     public static async Task<IResult> HandleAsync(Guid id, ClaimsPrincipal user, IEnvironmentRepository environmentRepository, CancellationToken cancellationToken)
     {
-        var result = await environmentRepository.GetEnvironmentAsync(id, user.GetUserId());
+        var environment = await environmentRepository.GetEnvironmentAsync(id, user.GetUserId());
         
-        return result.wasFound ? Results.Ok(result.environment) : Results.NotFound(result.reason);
+        return environment is null ? Results.NotFound("Environment not found") : Results.Ok(environment);
     }
 }

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Switcharoo.Common;
 using Switcharoo.Extensions;
+using Environment = Switcharoo.Database.Entities.Environment;
 
 namespace Switcharoo.Features.Environments.AddEnvironment;
 
@@ -17,7 +18,7 @@ public sealed class AddEnvironmentEndpoint : IEndpoint
             .Produces<string>(StatusCodes.Status409Conflict);
     }
     
-    public static async Task<IResult> HandleAsync(AddEnvironmentRequest request, ClaimsPrincipal user, IEnvironmentRepository environmentRepository, CancellationToken cancellationToken)
+    public static async Task<IResult> HandleAsync(AddEnvironmentRequest request, ClaimsPrincipal user, IEnvironmentRepository environmentRepository, IUserRepository userRepository, CancellationToken cancellationToken)
     {
         
         if (!await environmentRepository.IsNameAvailableAsync(request.Name, user.GetUserId()))
@@ -25,8 +26,17 @@ public sealed class AddEnvironmentEndpoint : IEndpoint
             return Results.Conflict("Name is already in use");
         }
 
-        var result = await environmentRepository.AddEnvironmentAsync(request.Name, user.GetUserId());
+        var storedUser = await userRepository.GetUserAsync(user.GetUserId());
         
-        return result.wasAdded ? Results.Ok(new AddEnvironmentResponse(request.Name, result.key)) : Results.BadRequest(result.reason);
+        if (storedUser is null)
+        {
+            return Results.BadRequest("User not found");
+        }
+        
+        var environment = new Environment { Id = Guid.NewGuid(), Name = request.Name, Owner = storedUser, Features = [] };
+        
+        await environmentRepository.AddEnvironmentAsync(environment);
+        
+        return Results.Ok();
     }
 }
