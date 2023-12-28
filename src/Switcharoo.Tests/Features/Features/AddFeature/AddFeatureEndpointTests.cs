@@ -224,7 +224,7 @@ public sealed class AddFeatureEndpointTests
         userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
         
         var user = UserHelper.GetClaimsPrincipalWithClaims();
-        var addFeatureRequest = new AddFeatureRequest("Test Feature", string.Empty, "Test feature", null);
+        var addFeatureRequest = new AddFeatureRequest("Test Feature", "test-feature", "Test feature", null);
         
         // Act
         await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, userRepository, CancellationToken.None);

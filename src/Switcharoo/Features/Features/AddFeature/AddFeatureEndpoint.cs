@@ -45,11 +45,6 @@ public sealed class AddFeatureEndpoint : IEndpoint
             return Results.Conflict("Name is already in use");
         }
 
-        if (string.IsNullOrWhiteSpace(feature.Key))
-        {
-            feature.Key = feature.Name.Replace(" ", "-").ToLower();
-        }
-
         if (!await featureRepository.IsKeyAvailableAsync(feature.Key, user.GetUserId()))
         {
             return Results.Conflict("Key is already in use");

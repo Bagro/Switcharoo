@@ -51,11 +51,6 @@ public sealed class UpdateFeatureEndpoint : IEndpoint
         feature.Description = updateFeatureRequest.Description;
         feature.Key = updateFeatureRequest.Key;
         
-        if (string.IsNullOrWhiteSpace(feature.Key))
-        {
-            feature.Key = feature.Name.Replace(" ", "-").ToLower();
-        }
-
         if (!await featureRepository.IsKeyAvailableAsync(feature.Key, feature.Id, user.GetUserId()))
         {
             return Results.Conflict("Key is already in use");
