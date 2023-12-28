@@ -13,13 +13,13 @@ public sealed class DeleteFeatureEndpoint : IEndpoint
             .WithName("DeleteFeature")
             .WithOpenApi()
             .Produces(StatusCodes.Status200OK)
-            .Produces<string>(StatusCodes.Status403Forbidden);
+            .Produces<string>(StatusCodes.Status400BadRequest);
     }
 
     public static async Task<IResult> HandleAsync(Guid id, ClaimsPrincipal user, IFeatureRepository featureRepository, CancellationToken cancellationToken)
     {
         var result = await featureRepository.DeleteFeatureAsync(id, user.GetUserId());
         
-        return result.wasDeleted ? Results.Ok() : Results.Forbid();
+        return result.wasDeleted ? Results.Ok() : Results.BadRequest(result.reason);
     }
 }

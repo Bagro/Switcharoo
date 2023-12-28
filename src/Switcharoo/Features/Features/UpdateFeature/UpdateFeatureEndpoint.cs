@@ -20,6 +20,21 @@ public sealed class UpdateFeatureEndpoint : IEndpoint
     
     public static async Task<IResult> HandleAsync(UpdateFeatureRequest updateFeatureRequest, ClaimsPrincipal user, IFeatureRepository featureRepository, CancellationToken cancellationToken)
     {
+        if (updateFeatureRequest.Id == Guid.Empty)
+        {
+            return Results.BadRequest("Id is required");
+        }
+        
+        if (string.IsNullOrWhiteSpace(updateFeatureRequest.Name))
+        {
+            return Results.BadRequest("Name is required");
+        }
+        
+        if (string.IsNullOrWhiteSpace(updateFeatureRequest.Key))
+        {
+            return Results.BadRequest("Key is required");
+        }
+
         if (!await featureRepository.IsNameAvailableAsync(updateFeatureRequest.Name, updateFeatureRequest.Id, user.GetUserId()))
         {
             return Results.Conflict("Name is already in use");
@@ -60,6 +75,7 @@ public sealed class UpdateFeatureEndpoint : IEndpoint
 
         var environmentsToAdd = newEnvironments.Except(existingEnvironments).ToList();
         var environmentsToRemove = existingEnvironments.Except(newEnvironments).ToList();
+        var environmentsToUpdate = newEnvironments.Intersect(existingEnvironments).Except(environmentsToRemove).ToList();
 
         foreach (var environmentId in environmentsToAdd)
         {
@@ -87,6 +103,17 @@ public sealed class UpdateFeatureEndpoint : IEndpoint
             }
 
             feature.Environments.Remove(featureEnvironment);
+        }
+        
+        foreach (var environmentId in environmentsToUpdate)
+        {
+            var featureEnvironment = feature.Environments.SingleOrDefault(x => x.Environment.Id == environmentId);
+            if (featureEnvironment == null)
+            {
+                continue;
+            }
+            
+            featureEnvironment.IsEnabled = updateFeatureRequest.Environments.Single(x => x.Id == environmentId).IsEnabled;
         }
     }
 }

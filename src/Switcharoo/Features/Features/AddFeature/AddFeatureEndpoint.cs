@@ -20,6 +20,17 @@ public sealed class AddFeatureEndpoint : IEndpoint
     
     public static async Task<IResult> HandleAsync(AddFeatureRequest request, ClaimsPrincipal user, IFeatureRepository featureRepository, IUserRepository userRepository, CancellationToken cancellationToken)
     {
+        
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return Results.BadRequest("Name is required");
+        }
+        
+        if (string.IsNullOrWhiteSpace(request.Key))
+        {
+            return Results.BadRequest("Key is required");
+        }
+
         var feature = new Feature
         {
             Id = Guid.NewGuid(),

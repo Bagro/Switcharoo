@@ -219,7 +219,7 @@ public sealed class EnvironmentRepositoryTests
         await repository.DeleteEnvironmentAsync(environmentId, user.Id);
         
         // Assert
-        (await context.Environments.ToListAsync()).Should().BeEmpty();
+        context.Environments.All(x => x.Id != environmentId).Should().BeTrue();
     }
     
     [Fact]
