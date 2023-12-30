@@ -10,15 +10,10 @@ namespace Switcharoo.Tests.Features.Environments;
 
 public sealed class EnvironmentRepositoryTests
 {
-    private readonly DbContextOptions<SqliteDbContext> _dbContextOptions;
-
-    public EnvironmentRepositoryTests()
-    {
-        _dbContextOptions = new DbContextOptionsBuilder<SqliteDbContext>()
-            .UseInMemoryDatabase(databaseName: "InMemoryDbForTesting")
-            .EnableSensitiveDataLogging()
-            .Options;
-    }
+    private readonly DbContextOptions<SqliteDbContext> _dbContextOptions = new DbContextOptionsBuilder<SqliteDbContext>()
+        .UseInMemoryDatabase(databaseName: "InMemoryDbForTesting")
+        .EnableSensitiveDataLogging()
+        .Options;
 
     [Fact]
     public async Task AddEnvironmentAsync_NewEnvironmentAdded_ContextShouldContainEnvironment()
