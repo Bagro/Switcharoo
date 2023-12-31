@@ -16,7 +16,7 @@ public sealed class GetTeamEndpoint : IEndpoint
             .WithName("GetTeam")
             .WithOpenApi()
             .Produces<Model.Team>(StatusCodes.Status200OK)
-            .Produces<string>(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status403Forbidden)
             .Produces<string>(StatusCodes.Status404NotFound);
     }
     
