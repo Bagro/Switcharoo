@@ -19,4 +19,8 @@
       <ProjectReference Include="..\Switcharoo\Switcharoo.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Features\Teams\AddTeam\" />
+    </ItemGroup>
+
 </Project>

@@ -1,5 +1,8 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Routing;
 using NSubstitute;
 using Switcharoo.Common;
 using Switcharoo.Database.Entities;
@@ -15,6 +18,21 @@ namespace Switcharoo.Tests.Features.Features.AddFeature;
 
 public sealed class AddFeatureEndpointTests
 {
+    [Fact]
+    public void MapEndpoint_ShouldMapEndpointAndRequireAuthorization()
+    {
+        // Arrange
+        var endpoints = Substitute.For<IEndpointRouteBuilder>();
+        var addFeatureEndpoint = new AddFeatureEndpoint();
+        
+        // Act
+        addFeatureEndpoint.MapEndpoint(endpoints);
+        
+        // Assert
+        var dummyRequestDelegate = Substitute.For<RequestDelegate>();
+        endpoints.Received().MapPost("/feature", dummyRequestDelegate).RequireAuthorization();
+    }
+    
     [Fact]
     public async Task HandleAsync_ValidRequest_ShouldReturnOk()
     {

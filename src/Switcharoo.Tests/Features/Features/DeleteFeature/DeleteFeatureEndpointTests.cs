@@ -1,5 +1,8 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Routing;
 using NSubstitute;
 using Switcharoo.Features.Features;
 using Switcharoo.Features.Features.DeleteFeature;
@@ -9,6 +12,21 @@ namespace Switcharoo.Tests.Features.Features.DeleteFeature;
 
 public sealed class DeleteFeatureEndpointTests
 {
+    [Fact]
+    public void MapEndpoint_ShouldMapEndpointAndRequireAuthorization()
+    {
+        // Arrange
+        var endpoints = Substitute.For<IEndpointRouteBuilder>();
+        var deleteFeatureEndpoint = new DeleteFeatureEndpoint();
+        
+        // Act
+        deleteFeatureEndpoint.MapEndpoint(endpoints);
+        
+        // Assert
+        var dummyRequestDelegate = Substitute.For<RequestDelegate>();
+        endpoints.Received().MapDelete("/feature/{featureId}", dummyRequestDelegate).RequireAuthorization();
+    }
+    
     [Fact]
     public async Task HandleAsync_FeatureDeleted_ShouldReturnOk()
     {

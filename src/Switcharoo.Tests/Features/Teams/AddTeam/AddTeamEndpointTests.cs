@@ -1,7 +1,8 @@
-﻿using System.Runtime.InteropServices.JavaScript;
-using FluentAssertions;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Routing;
 using NSubstitute;
 using Switcharoo.Common;
 using Switcharoo.Features.Teams.AddTeam;
@@ -13,6 +14,21 @@ namespace Switcharoo.Tests.Features.Teams.AddTeam;
 
 public sealed class AddTeamEndpointTests
 {
+    [Fact]
+    public void MapEndpoint_ShouldMapEndpointAndRequireAuthorization()
+    {
+        // Arrange
+        var endpoints = Substitute.For<IEndpointRouteBuilder>();
+        var addTeamEndpoint = new AddTeamEndpoint();
+        
+        // Act
+        addTeamEndpoint.MapEndpoint(endpoints);
+        
+        // Assert
+        var dummyRequestDelegate = Substitute.For<RequestDelegate>();
+        endpoints.Received().MapPost("/team", dummyRequestDelegate).RequireAuthorization();
+    }
+    
     [Fact]
     public async Task HandleAsync_ValidInput_ReturnsOk()
     {

@@ -1,5 +1,8 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Routing;
 using NSubstitute;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
@@ -13,6 +16,21 @@ namespace Switcharoo.Tests.Features.Teams.GetTeam;
 
 public sealed class GetTeamEndpointTests
 {
+    [Fact]
+    public void MapEndpoint_ShouldMapEndpointAndRequireAuthorization()
+    {
+        // Arrange
+        var endpoints = Substitute.For<IEndpointRouteBuilder>();
+        var getTeamEndpoint = new GetTeamEndpoint();
+        
+        // Act
+        getTeamEndpoint.MapEndpoint(endpoints);
+        
+        // Assert
+        var dummyRequestDelegate = Substitute.For<RequestDelegate>();
+        endpoints.Received().MapGet("/team/{teamId}", dummyRequestDelegate).RequireAuthorization();
+    }
+    
     [Fact]
     public async Task HandleAsync_WhenTeamNotFound_ReturnsNotFound()
     {
@@ -48,15 +66,18 @@ public sealed class GetTeamEndpointTests
     }
     
     [Fact]
-    public async Task HandleAsync_WhenUserNotTeamOwnerAndTeamPublic_ReturnsOk()
+    public async Task HandleAsync_WhenUserNotTeamOwnerButMember_ReturnsOk()
     {
         // Arrange
         var teamRepository = Substitute.For<ITeamRepository>();
         var user = UserHelper.GetClaimsPrincipalWithClaims();
-
+    
+        var fakeUser = UserFakes.GetFakeUser();
+        fakeUser.Id = user.GetUserId();
+        
         var team = TeamFakes.GetFakeTeam();
         team.AllCanManage = true;
-        team.Members = new List<User>();
+        team.Members = [fakeUser];
         
         teamRepository.GetTeamAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(team);
         

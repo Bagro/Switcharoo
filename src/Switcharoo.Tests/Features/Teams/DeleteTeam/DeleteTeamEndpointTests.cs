@@ -1,5 +1,8 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Routing;
 using NSubstitute;
 using Switcharoo.Extensions;
 using Switcharoo.Features.Teams.DeleteTeam;
@@ -11,6 +14,21 @@ namespace Switcharoo.Tests.Features.Teams.DeleteTeam;
 
 public sealed class DeleteTeamEndpointTests
 {
+    [Fact]
+    public void MapEndpoint_ShouldMapEndpointAndRequireAuthorization()
+    {
+        // Arrange
+        var endpoints = Substitute.For<IEndpointRouteBuilder>();
+        var deleteTeamEndpoint = new DeleteTeamEndpoint();
+        
+        // Act
+        deleteTeamEndpoint.MapEndpoint(endpoints);
+        
+        // Assert
+        var dummyRequestDelegate = Substitute.For<RequestDelegate>();
+        endpoints.Received().MapDelete("/team/{teamId}", dummyRequestDelegate).RequireAuthorization();
+    }
+    
     [Fact]
     public async Task HandleAsync_WhenTeamNotFound_ReturnsBadRequest()
     {

@@ -19,7 +19,7 @@ public static class TeamFactory
         AddEnvironmentsToReturnTeam(entity, team);
         AddFeaturesToReturnTeam(entity, team);
         
-        if (entity.Owner.Id == userId || team.Members.Exists(x => x.Id == userId))
+        if (entity.Owner.Id == userId || entity.Members.Exists(x => x.Id == userId))
         {
             AddTeamMembersToReturnTeam(entity, team);
         }

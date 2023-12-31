@@ -1,6 +1,8 @@
-using System.Security.Claims;
 using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Routing;
 using NSubstitute;
 using Switcharoo.Extensions;
 using Switcharoo.Features.Environments;
@@ -12,6 +14,21 @@ namespace Switcharoo.Tests.Features.Environments.UpdateEnvironment;
 
 public sealed class UpdateEnvironmentEndpointTests
 {
+    [Fact]
+    public void MapEndpoint_ShouldMapEndpointAndRequireAuthorization()
+    {
+        // Arrange
+        var endpoints = Substitute.For<IEndpointRouteBuilder>();
+        var updateEnvironmentEndpoint = new UpdateEnvironmentEndpoint();
+        
+        // Act
+        updateEnvironmentEndpoint.MapEndpoint(endpoints);
+        
+        // Assert
+        var dummyRequestDelegate = Substitute.For<RequestDelegate>();
+        endpoints.Received().MapPut("/environment/{environmentId}", dummyRequestDelegate).RequireAuthorization();
+    }
+    
     [Fact]
     public async Task HandleAsync_UpdateExistingEnvironment_ReturnsOk()
     {
