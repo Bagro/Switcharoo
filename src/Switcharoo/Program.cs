@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Switcharoo;
+using Switcharoo.Common;
 using Switcharoo.Database;
-using Switcharoo.Entities;
-using Switcharoo.Interfaces;
-using Switcharoo.Providers;
-using Switcharoo.Repositories;
+using Switcharoo.Database.Entities;
+using Switcharoo.Extensions;
+using Switcharoo.Features.Environments;
+using Switcharoo.Features.Features;
+using Switcharoo.Features.Teams;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,31 +14,7 @@ builder.Services.AddAuthorizationBuilder();
 
 var httpOnly = builder.Configuration.GetSection("HTTP_Only").Get<bool?>() ?? false;
 
-var dbType = builder.Configuration["DbType"];
-
-if (dbType != null && dbType.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase))
-{
-    builder.Services.AddDbContext<BaseDbContext, PostgresDbContext>(x => x.UseNpgsql(builder.Configuration.GetConnectionString("SwitcharooDb")));
-    builder.Services.AddIdentityCore<User>()
-        .AddEntityFrameworkStores<PostgresDbContext>()
-        .AddApiEndpoints();
-}
-else if (dbType != null && (dbType.Equals("MariaDB", StringComparison.OrdinalIgnoreCase) || dbType.Equals("MySQL", StringComparison.OrdinalIgnoreCase)))
-{
-    var version = builder.Configuration["MyMariaVersion"];
-    ServerVersion serverVersion = dbType.Equals("MariaDB", StringComparison.OrdinalIgnoreCase) ? new MariaDbServerVersion(version) : new MySqlServerVersion(version);
-    builder.Services.AddDbContext<BaseDbContext, MariaDbContext>(x => x.UseMySql(builder.Configuration.GetConnectionString("SwitcharooDb"), serverVersion));
-    builder.Services.AddIdentityCore<User>()
-        .AddEntityFrameworkStores<MariaDbContext>()
-        .AddApiEndpoints();
-}
-else
-{
-    builder.Services.AddDbContext<BaseDbContext, SqliteDbContext>(x => x.UseSqlite(builder.Configuration.GetConnectionString("SwitcharooDb")));
-    builder.Services.AddIdentityCore<User>()
-        .AddEntityFrameworkStores<SqliteDbContext>()
-        .AddApiEndpoints();
-}
+builder.Services.AddDatabase(builder.Configuration);
 
 builder.Services.AddCors(
     options => options.AddPolicy(
@@ -58,18 +34,15 @@ builder.Services.AddCors(
                 .SetIsOriginAllowedToAllowWildcardSubdomains();
         }));
 
-builder.Services.AddScoped<IFeatureProvider, FeatureProvider>();
-builder.Services.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
-builder.Services.AddScoped<ITeamProvider, TeamProvider>();
-builder.Services.AddScoped<IFeatureRepository, FeatureRepository>();
-builder.Services.AddScoped<IEnvironmentRepository, EnvironmentRepository>();
-builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddFeatures();
+builder.Services.AddEnvironments();
+builder.Services.AddTeams();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
 
 builder.Services.Configure<RouteOptions>(
     options =>
@@ -93,6 +66,6 @@ if (!httpOnly)
 
 app.MapGroup("auth").MapIdentityApi<User>();
 
-app.MapControllers();
+app.RegisterEndpoints();
 
 app.Run();

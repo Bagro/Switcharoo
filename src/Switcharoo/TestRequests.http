@@ -34,7 +34,7 @@ Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-    "name": "{{featureName}}",
+    "name": "{{featurename}}",
     "description": "Test feature description" 
 }
 
@@ -55,23 +55,23 @@ Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-    "featureId": "87f93587-1e70-4418-bce0-034ec46a7326",
-    "environmentId": "57d2c086-83fc-495b-bed0-c629fc7eb0b2"
+    "featureId": "b433ac01-77ba-4e43-a532-663ef32ba625",
+    "environmentId": "4f16e81e-1924-4b4e-865a-b14813a627c0"
 }
 
 ###
 # Toggle feature in environment (update with valid ids)
-PUT {{baseurl}}/feature
+PUT {{baseurl}}/feature/toggle
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-    "featureId": "87f93587-1e70-4418-bce0-034ec46a7326",
-    "environmentId": "57d2c086-83fc-495b-bed0-c629fc7eb0b2" 
+    "featureId": "b433ac01-77ba-4e43-a532-663ef32ba625",
+    "environmentId": "4f16e81e-1924-4b4e-865a-b14813a627c0" 
 }
 
 ###
 # Get feature state
-GET {{baseurl}}/feature/{{featurename}}/environment/57d2c086-83fc-495b-bed0-c629fc7eb0b2
+GET {{baseurl}}/feature/{{featurename}}/environment/4f16e81e-1924-4b4e-865a-b14813a627c0
 
 ###
