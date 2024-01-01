@@ -3,7 +3,6 @@ using Switcharoo.Common;
 using Switcharoo.Extensions;
 using Switcharoo.Features.Teams.Model;
 using Switcharoo.Features.Teams.Shared;
-using Switcharoo.Interfaces;
 
 namespace Switcharoo.Features.Teams.GetTeams;
 

@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using NSubstitute;
 using Switcharoo.Extensions;
+using Switcharoo.Features.Teams;
 using Switcharoo.Features.Teams.DeleteTeam;
-using Switcharoo.Interfaces;
 using Switcharoo.Tests.Common;
 using Xunit;
 
@@ -50,7 +50,7 @@ public sealed class DeleteTeamEndpointTests
         var teamRepository = Substitute.For<ITeamRepository>();
         var user = UserHelper.GetClaimsPrincipalWithClaims();
 
-        teamRepository.GetTeamAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(TeamFakes.GetFakeTeam());
+        teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(TeamFakes.GetFakeTeam());
         
         // Act
         var result = await new DeleteTeamEndpoint().HandleAsync(Guid.NewGuid(), user, teamRepository);
@@ -69,7 +69,7 @@ public sealed class DeleteTeamEndpointTests
         var team = TeamFakes.GetFakeTeam();
         team.Owner.Id = user.GetUserId();
 
-        teamRepository.GetTeamAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(team);
+        teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(team);
         
         // Act
         var result = await new DeleteTeamEndpoint().HandleAsync(team.Id, user, teamRepository);

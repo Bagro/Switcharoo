@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Switcharoo.Common;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
-using Switcharoo.Interfaces;
 
 namespace Switcharoo.Features.Teams.UpdateTeam;
 
@@ -20,21 +19,21 @@ public sealed class UpdateTeamEndpoint : IEndpoint
             .Produces<string>(StatusCodes.Status409Conflict);
     }
 
-    public static async Task<IResult> HandleAsync(UpdateTeamRequest request, ClaimsPrincipal user, ITeamRepository teamRepository, IUserRepository userRepository, CancellationToken cancellationToken)
+    public static async Task<IResult> HandleAsync(UpdateTeamRequest request, ClaimsPrincipal user, ITeamRepository teamRepository, CancellationToken cancellationToken)
     {
-        var storedUser = await userRepository.GetUserAsync(user.GetUserId());
+        var storedUser = await teamRepository.GetUserAsync(user.GetUserId());
 
         if (storedUser is null)
         {
             return Results.BadRequest("User not found");
         }
 
-        if (!await teamRepository.IsNameAvailableAsync(request.Name, request.Id, storedUser.Id))
+        if (!await teamRepository.IsNameAvailableAsync(request.Name, request.Id))
         {
             return Results.Conflict("Name is already in use");
         }
 
-        var team = await teamRepository.GetTeamAsync(request.Id, storedUser.Id);
+        var team = await teamRepository.GetTeamAsync(request.Id);
 
         if (team is null)
         {

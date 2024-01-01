@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Switcharoo.Common;
 using Switcharoo.Extensions;
-using Switcharoo.Interfaces;
 
 namespace Switcharoo.Features.Teams.DeleteTeam;
 
@@ -19,7 +18,7 @@ public sealed class DeleteTeamEndpoint : IEndpoint
     
     public async Task<IResult> HandleAsync(Guid teamId, ClaimsPrincipal user, ITeamRepository teamRepository)
     {
-        var team = await teamRepository.GetTeamAsync(teamId, user.GetUserId());
+        var team = await teamRepository.GetTeamAsync(teamId);
 
         if (team is null)
         {

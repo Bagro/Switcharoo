@@ -18,7 +18,7 @@ public sealed class AddFeatureEndpoint : IEndpoint
             .Produces<string>(StatusCodes.Status409Conflict);
     }
     
-    public static async Task<IResult> HandleAsync(AddFeatureRequest request, ClaimsPrincipal user, IFeatureRepository featureRepository, IUserRepository userRepository, CancellationToken cancellationToken)
+    public static async Task<IResult> HandleAsync(AddFeatureRequest request, ClaimsPrincipal user, IFeatureRepository featureRepository, CancellationToken cancellationToken)
     {
         
         if (string.IsNullOrWhiteSpace(request.Name))
@@ -50,7 +50,7 @@ public sealed class AddFeatureEndpoint : IEndpoint
             return Results.Conflict("Key is already in use");
         }
         
-        var storedUser = await userRepository.GetUserAsync(user.GetUserId());
+        var storedUser = await featureRepository.GetUserAsync(user.GetUserId());
         if (storedUser == null)
         {
             return Results.BadRequest("User not found");

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Switcharoo.Database;
+using Switcharoo.Database.Entities;
 using Environment = Switcharoo.Database.Entities.Environment;
 
 namespace Switcharoo.Features.Environments;
@@ -59,5 +60,10 @@ public sealed class EnvironmentRepository(BaseDbContext context) : IEnvironmentR
     public async Task<bool> IsNameAvailableAsync(string name, Guid environmentId, Guid userId)
     {
         return !await context.Environments.AnyAsync(x => x.Owner.Id == userId && x.Id != environmentId && x.Name == name);
+    }
+    
+    public Task<User?> GetUserAsync(Guid userId)
+    {
+        return context.Users.SingleOrDefaultAsync(x => x.Id == userId);
     }
 }

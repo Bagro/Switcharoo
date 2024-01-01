@@ -1,9 +1,10 @@
+using Switcharoo.Common;
 using Switcharoo.Database.Entities;
 using Environment = Switcharoo.Database.Entities.Environment;
 
 namespace Switcharoo.Features.Features;
 
-public interface IFeatureRepository
+public interface IFeatureRepository : IUserRepository
 {
     Task<(bool isActive, bool wasFound)> GetFeatureStateAsync(string featureKey, Guid environmentId);
 

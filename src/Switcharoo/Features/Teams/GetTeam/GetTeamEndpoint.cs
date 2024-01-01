@@ -3,7 +3,6 @@ using Switcharoo.Common;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
 using Switcharoo.Features.Teams.Shared;
-using Switcharoo.Interfaces;
 
 namespace Switcharoo.Features.Teams.GetTeam;
 
@@ -22,7 +21,7 @@ public sealed class GetTeamEndpoint : IEndpoint
     
     public static async Task<IResult> HandleAsync(Guid id, ClaimsPrincipal user, ITeamRepository teamRepository)
     {
-        var team = await teamRepository.GetTeamAsync(id, user.GetUserId());
+        var team = await teamRepository.GetTeamAsync(id);
         
         if (team is null)
         {

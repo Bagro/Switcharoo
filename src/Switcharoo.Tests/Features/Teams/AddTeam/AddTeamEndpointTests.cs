@@ -4,9 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using NSubstitute;
-using Switcharoo.Common;
+using Switcharoo.Features.Teams;
 using Switcharoo.Features.Teams.AddTeam;
-using Switcharoo.Interfaces;
 using Switcharoo.Tests.Common;
 using Xunit;
 
@@ -38,15 +37,14 @@ public sealed class AddTeamEndpointTests
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
 
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>()).Returns(true);
         
         var addTeamEndpoint = new AddTeamEndpoint();
 
         // Act
-        var result = await addTeamEndpoint.HandleAsync(request, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await addTeamEndpoint.HandleAsync(request, user, teamRepository, CancellationToken.None);
         
         // Assert
         result.Should().BeOfType<Ok<AddTeamResponse>>();
@@ -61,10 +59,9 @@ public sealed class AddTeamEndpointTests
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
     
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>()).Returns(true);
         
         var addTeamEndpoint = new AddTeamEndpoint();
         
@@ -72,7 +69,7 @@ public sealed class AddTeamEndpointTests
         await teamRepository.AddTeamAsync(Arg.Do<Database.Entities.Team>( x => team = x));
 
         // Act
-        await addTeamEndpoint.HandleAsync(request, user, teamRepository, userRepository, CancellationToken.None);
+        await addTeamEndpoint.HandleAsync(request, user, teamRepository, CancellationToken.None);
         
         // Assert
        Compare(team, request).Should().BeTrue();
@@ -87,15 +84,14 @@ public sealed class AddTeamEndpointTests
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
 
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns((Database.Entities.User)null);
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns((Database.Entities.User?)null);
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>()).Returns(true);
         
         var addTeamEndpoint = new AddTeamEndpoint();
         
         // Act
-        var result = await addTeamEndpoint.HandleAsync(request, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await addTeamEndpoint.HandleAsync(request, user, teamRepository, CancellationToken.None);
         
         // Assert
         result.Should().BeOfType<BadRequest<string>>();
@@ -110,15 +106,14 @@ public sealed class AddTeamEndpointTests
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
 
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(false);
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>()).Returns(false);
         
         var addTeamEndpoint = new AddTeamEndpoint();
         
         // Act
-        var result = await addTeamEndpoint.HandleAsync(request, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await addTeamEndpoint.HandleAsync(request, user, teamRepository, CancellationToken.None);
         
         // Assert
         result.Should().BeOfType<Conflict<string>>();

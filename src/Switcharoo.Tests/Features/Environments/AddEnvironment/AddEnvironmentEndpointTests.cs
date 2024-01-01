@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using NSubstitute;
-using Switcharoo.Common;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
 using Switcharoo.Features.Environments;
@@ -38,12 +37,12 @@ public sealed class AddEnvironmentEndpointTests
         var request = new AddEnvironmentRequest("Test Environment");
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var environmentRepository = Substitute.For<IEnvironmentRepository>();
+        
         environmentRepository.IsNameAvailableAsync(request.Name, user.GetUserId()).Returns(true);
-        var userRepository = Substitute.For<IUserRepository>();
-        userRepository.GetUserAsync(user.GetUserId()).Returns(UserFakes.GetFakeUser());
+        environmentRepository.GetUserAsync(user.GetUserId()).Returns(UserFakes.GetFakeUser());
 
         // Act
-        var result = await AddEnvironmentEndpoint.HandleAsync(request, user, environmentRepository, userRepository, CancellationToken.None);
+        var result = await AddEnvironmentEndpoint.HandleAsync(request, user, environmentRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<Ok>();
@@ -56,12 +55,12 @@ public sealed class AddEnvironmentEndpointTests
         var request = new AddEnvironmentRequest("Test Environment");
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var environmentRepository = Substitute.For<IEnvironmentRepository>();
+        
         environmentRepository.IsNameAvailableAsync(request.Name, user.GetUserId()).Returns(false);
-        var userRepository = Substitute.For<IUserRepository>();
-        userRepository.GetUserAsync(user.GetUserId()).Returns(UserFakes.GetFakeUser());
+        environmentRepository.GetUserAsync(user.GetUserId()).Returns(UserFakes.GetFakeUser());
 
         // Act
-        var result = await AddEnvironmentEndpoint.HandleAsync(request, user, environmentRepository, userRepository, CancellationToken.None);
+        var result = await AddEnvironmentEndpoint.HandleAsync(request, user, environmentRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<Conflict<string>>();
@@ -74,12 +73,12 @@ public sealed class AddEnvironmentEndpointTests
         var request = new AddEnvironmentRequest("Test Environment");
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var environmentRepository = Substitute.For<IEnvironmentRepository>();
+        
         environmentRepository.IsNameAvailableAsync(request.Name, user.GetUserId()).Returns(true);
-        var userRepository = Substitute.For<IUserRepository>();
-        userRepository.GetUserAsync(user.GetUserId()).Returns((User?)null);
+        environmentRepository.GetUserAsync(user.GetUserId()).Returns((User?)null);
 
         // Act
-        var result = await AddEnvironmentEndpoint.HandleAsync(request, user, environmentRepository, userRepository, CancellationToken.None);
+        var result = await AddEnvironmentEndpoint.HandleAsync(request, user, environmentRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<BadRequest<string>>();

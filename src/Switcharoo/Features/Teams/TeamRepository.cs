@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Switcharoo.Database;
 using Switcharoo.Database.Entities;
-using Switcharoo.Interfaces;
 using Environment = Switcharoo.Database.Entities.Environment;
 
 namespace Switcharoo.Features.Teams;
@@ -26,7 +25,7 @@ public sealed class TeamRepository(BaseDbContext context) : ITeamRepository
         await context.SaveChangesAsync();
     }
 
-    public Task<Team?> GetTeamAsync(Guid teamId, Guid userId)
+    public Task<Team?> GetTeamAsync(Guid teamId)
     {
         return context.Teams
             .Include(x => x.Owner).Include(x => x.Members)
@@ -62,12 +61,12 @@ public sealed class TeamRepository(BaseDbContext context) : ITeamRepository
             .ToListAsync();
     }
     
-    public async Task<bool> IsNameAvailableAsync(string name, Guid userId)
+    public async Task<bool> IsNameAvailableAsync(string name)
     {
         return !await context.Teams.AnyAsync(x => x.Name == name);
     }
 
-    public async Task<bool> IsNameAvailableAsync(string name, Guid teamId, Guid userId)
+    public async Task<bool> IsNameAvailableAsync(string name, Guid teamId)
     {
         return !await context.Teams.AnyAsync(x => x.Id != teamId && x.Name == name);
     }
@@ -78,5 +77,16 @@ public sealed class TeamRepository(BaseDbContext context) : ITeamRepository
             .Include(x => x.Owner)
             .Where(x => featuresToAdd.Contains(x.Id) && x.Owner.Id == userId)
             .ToListAsync();
+    }
+
+    public async Task AddInviteCodeAsync(TeamInvite teamInvite)
+    {
+        context.TeamInvites.Add(teamInvite);
+        await context.SaveChangesAsync();
+    }
+    
+    public Task<User?> GetUserAsync(Guid userId)
+    {
+        return context.Users.SingleOrDefaultAsync(x => x.Id == userId);
     }
 }
