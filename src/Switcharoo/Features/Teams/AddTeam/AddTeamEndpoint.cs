@@ -28,7 +28,7 @@ public sealed class AddTeamEndpoint : IEndpoint
             return Results.BadRequest("User not found");
         }
         
-        var isNameAvailable = await teamRepository.IsNameAvailableAsync(request.Name, storedUser.Id);
+        var isNameAvailable = await teamRepository.IsNameAvailableAsync(request.Name);
         
         if (!isNameAvailable)
         {

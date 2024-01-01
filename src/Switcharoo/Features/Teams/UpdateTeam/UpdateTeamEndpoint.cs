@@ -29,12 +29,12 @@ public sealed class UpdateTeamEndpoint : IEndpoint
             return Results.BadRequest("User not found");
         }
 
-        if (!await teamRepository.IsNameAvailableAsync(request.Name, request.Id, storedUser.Id))
+        if (!await teamRepository.IsNameAvailableAsync(request.Name, request.Id))
         {
             return Results.Conflict("Name is already in use");
         }
 
-        var team = await teamRepository.GetTeamAsync(request.Id, storedUser.Id);
+        var team = await teamRepository.GetTeamAsync(request.Id);
 
         if (team is null)
         {

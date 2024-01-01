@@ -56,7 +56,7 @@ public sealed class GetTeamEndpointTests
         team.AllCanManage = false;
         team.Members = new List<User>();
         
-        teamRepository.GetTeamAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(team);
+        teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(team);
         
         // Act
         var result = await GetTeamEndpoint.HandleAsync(Guid.NewGuid(), user, teamRepository);
@@ -79,7 +79,7 @@ public sealed class GetTeamEndpointTests
         team.AllCanManage = true;
         team.Members = [fakeUser];
         
-        teamRepository.GetTeamAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(team);
+        teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(team);
         
         // Act
         var result = await GetTeamEndpoint.HandleAsync(Guid.NewGuid(), user, teamRepository);
@@ -98,7 +98,7 @@ public sealed class GetTeamEndpointTests
         var team = TeamFakes.GetFakeTeam();
         team.Owner.Id = user.GetUserId();
 
-        teamRepository.GetTeamAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(team);
+        teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(team);
 
         // Act
         var result = await GetTeamEndpoint.HandleAsync(Guid.NewGuid(), user, teamRepository);

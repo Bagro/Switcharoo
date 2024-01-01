@@ -41,7 +41,7 @@ public sealed class AddTeamEndpointTests
         var userRepository = Substitute.For<IUserRepository>();
 
         userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>()).Returns(true);
         
         var addTeamEndpoint = new AddTeamEndpoint();
 
@@ -64,7 +64,7 @@ public sealed class AddTeamEndpointTests
         var userRepository = Substitute.For<IUserRepository>();
     
         userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>()).Returns(true);
         
         var addTeamEndpoint = new AddTeamEndpoint();
         
@@ -90,7 +90,7 @@ public sealed class AddTeamEndpointTests
         var userRepository = Substitute.For<IUserRepository>();
 
         userRepository.GetUserAsync(Arg.Any<Guid>()).Returns((Database.Entities.User)null);
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>()).Returns(true);
         
         var addTeamEndpoint = new AddTeamEndpoint();
         
@@ -113,7 +113,7 @@ public sealed class AddTeamEndpointTests
         var userRepository = Substitute.For<IUserRepository>();
 
         userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(false);
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>()).Returns(false);
         
         var addTeamEndpoint = new AddTeamEndpoint();
         

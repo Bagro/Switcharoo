@@ -58,7 +58,7 @@ public sealed class UpdateTeamEndpointTests
         var userRepository = Substitute.For<IUserRepository>();
 
         userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(false);
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(false);
 
         var updateTeamRequest = new UpdateTeamRequest(Guid.NewGuid(), "name", "description", false, false, [], []);
 
@@ -78,8 +78,8 @@ public sealed class UpdateTeamEndpointTests
         var userRepository = Substitute.For<IUserRepository>();
 
         userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(true);
-        teamRepository.GetTeamAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns((Team?)null);
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
+        teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns((Team?)null);
 
         var updateTeamRequest = new UpdateTeamRequest(Guid.NewGuid(), "name", "description", false, false, [], []);
 
@@ -99,8 +99,8 @@ public sealed class UpdateTeamEndpointTests
         var userRepository = Substitute.For<IUserRepository>();
 
         userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(true);
-        teamRepository.GetTeamAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(TeamFakes.GetFakeTeam());
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
+        teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(TeamFakes.GetFakeTeam());
 
         var updateTeamRequest = new UpdateTeamRequest(Guid.NewGuid(), "name", "description", false, false, [], []);
 
@@ -152,8 +152,8 @@ public sealed class UpdateTeamEndpointTests
         }
         
         userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(fakeUser);
-        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(true);
-        teamRepository.GetTeamAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(fakeTeam);
+        teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
+        teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(fakeTeam);
 
         teamRepository.GetEnvironmentsForIdAsync(Arg.Any<List<Guid>>(), Arg.Any<Guid>()).Returns(fakeEnvironments);
         teamRepository.GetFeaturesForIdAsync(Arg.Any<List<Guid>>(), Arg.Any<Guid>()).Returns(fakeFeatures);
