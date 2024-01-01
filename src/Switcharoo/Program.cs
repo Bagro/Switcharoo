@@ -7,6 +7,7 @@ using Switcharoo.Extensions;
 using Switcharoo.Features.Environments;
 using Switcharoo.Features.Features;
 using Switcharoo.Features.Teams;
+using Switcharoo.Features.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,7 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddFeatures();
 builder.Services.AddEnvironments();
 builder.Services.AddTeams();
+builder.Services.AddUsers();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
