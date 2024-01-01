@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using NSubstitute;
 using Switcharoo.Extensions;
+using Switcharoo.Features.Teams;
 using Switcharoo.Features.Teams.DeleteTeam;
-using Switcharoo.Interfaces;
 using Switcharoo.Tests.Common;
 using Xunit;
 

@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using NSubstitute;
+using Switcharoo.Features.Teams;
 using Switcharoo.Features.Teams.GetTeams;
 using Switcharoo.Features.Teams.Model;
-using Switcharoo.Interfaces;
 using Switcharoo.Tests.Common;
 using Xunit;
 

@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Switcharoo.Common;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
-using Switcharoo.Interfaces;
 
 namespace Switcharoo.Features.Teams.CreateInviteCode;
 
@@ -19,9 +18,9 @@ public sealed class CreateInviteCodeEndpoint : IEndpoint
             .Produces<string>(StatusCodes.Status409Conflict);
     }
     
-    public static async Task<IResult> HandleAsync(CreateInviteCodeRequest request, ClaimsPrincipal user, ITeamRepository teamRepository, IUserRepository userRepository, CancellationToken cancellationToken)
+    public static async Task<IResult> HandleAsync(CreateInviteCodeRequest request, ClaimsPrincipal user, ITeamRepository teamRepository, CancellationToken cancellationToken)
     {
-        var storedUser = await userRepository.GetUserAsync(user.GetUserId());
+        var storedUser = await teamRepository.GetUserAsync(user.GetUserId());
 
         if (storedUser is null)
         {

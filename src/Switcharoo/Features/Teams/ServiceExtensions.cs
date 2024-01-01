@@ -1,5 +1,3 @@
-using Switcharoo.Interfaces;
-
 namespace Switcharoo.Features.Teams;
 
 public static class ServiceExtensions

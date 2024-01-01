@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Switcharoo.Common;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
-using Switcharoo.Interfaces;
 
 namespace Switcharoo.Features.Teams.AddTeam;
 
@@ -19,9 +18,9 @@ public sealed class AddTeamEndpoint : IEndpoint
             .Produces<string>(StatusCodes.Status409Conflict);
     }
     
-    public async Task<IResult> HandleAsync(AddTeamRequest request, ClaimsPrincipal user, ITeamRepository teamRepository, IUserRepository userRepository, CancellationToken cancellationToken)
+    public async Task<IResult> HandleAsync(AddTeamRequest request, ClaimsPrincipal user, ITeamRepository teamRepository, CancellationToken cancellationToken)
     {
-        var storedUser = await userRepository.GetUserAsync(user.GetUserId());
+        var storedUser = await teamRepository.GetUserAsync(user.GetUserId());
 
         if (storedUser is null)
         {

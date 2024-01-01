@@ -4,11 +4,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using NSubstitute;
-using Switcharoo.Common;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
+using Switcharoo.Features.Teams;
 using Switcharoo.Features.Teams.UpdateTeam;
-using Switcharoo.Interfaces;
 using Switcharoo.Tests.Common;
 using Xunit;
 
@@ -36,14 +35,13 @@ public sealed class UpdateTeamEndpointTests
         // Arrange
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
 
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns((User?)null);
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns((User?)null);
 
         var updateTeamRequest = new UpdateTeamRequest(Guid.NewGuid(), "name", "description", false, false, [], []);
 
         // Act
-        var result = await UpdateTeamEndpoint.HandleAsync(updateTeamRequest, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await UpdateTeamEndpoint.HandleAsync(updateTeamRequest, user, teamRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<BadRequest<string>>().Which.Value.Should().Be("User not found");
@@ -55,15 +53,14 @@ public sealed class UpdateTeamEndpointTests
         // Arrange
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
 
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
         teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(false);
 
         var updateTeamRequest = new UpdateTeamRequest(Guid.NewGuid(), "name", "description", false, false, [], []);
 
         // Act
-        var result = await UpdateTeamEndpoint.HandleAsync(updateTeamRequest, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await UpdateTeamEndpoint.HandleAsync(updateTeamRequest, user, teamRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<Conflict<string>>().Which.Value.Should().Be("Name is already in use");
@@ -75,16 +72,15 @@ public sealed class UpdateTeamEndpointTests
         // Arrange
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
 
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
         teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
         teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns((Team?)null);
 
         var updateTeamRequest = new UpdateTeamRequest(Guid.NewGuid(), "name", "description", false, false, [], []);
 
         // Act
-        var result = await UpdateTeamEndpoint.HandleAsync(updateTeamRequest, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await UpdateTeamEndpoint.HandleAsync(updateTeamRequest, user, teamRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<BadRequest<string>>().Which.Value.Should().Be("Team not found");
@@ -96,16 +92,15 @@ public sealed class UpdateTeamEndpointTests
         // Arrange
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
 
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
         teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
         teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(TeamFakes.GetFakeTeam());
 
         var updateTeamRequest = new UpdateTeamRequest(Guid.NewGuid(), "name", "description", false, false, [], []);
 
         // Act
-        var result = await UpdateTeamEndpoint.HandleAsync(updateTeamRequest, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await UpdateTeamEndpoint.HandleAsync(updateTeamRequest, user, teamRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<ForbidHttpResult>();
@@ -117,7 +112,6 @@ public sealed class UpdateTeamEndpointTests
         // Arrange
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
 
         var fakeUser = UserFakes.GetFakeUser();
         fakeUser.Id = user.GetUserId();
@@ -151,7 +145,7 @@ public sealed class UpdateTeamEndpointTests
             index++;
         }
         
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(fakeUser);
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns(fakeUser);
         teamRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
         teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(fakeTeam);
 
@@ -171,7 +165,7 @@ public sealed class UpdateTeamEndpointTests
         }
         
         // Act
-        var result = await UpdateTeamEndpoint.HandleAsync(updateTeamRequest, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await UpdateTeamEndpoint.HandleAsync(updateTeamRequest, user, teamRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<Ok<string>>().Which.Value.Should().Be("Team updated");

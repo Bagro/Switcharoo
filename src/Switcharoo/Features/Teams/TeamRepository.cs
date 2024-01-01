@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Switcharoo.Database;
 using Switcharoo.Database.Entities;
-using Switcharoo.Interfaces;
 using Environment = Switcharoo.Database.Entities.Environment;
 
 namespace Switcharoo.Features.Teams;
@@ -84,5 +83,10 @@ public sealed class TeamRepository(BaseDbContext context) : ITeamRepository
     {
         context.TeamInvites.Add(teamInvite);
         await context.SaveChangesAsync();
+    }
+    
+    public Task<User?> GetUserAsync(Guid userId)
+    {
+        return context.Users.SingleOrDefaultAsync(x => x.Id == userId);
     }
 }

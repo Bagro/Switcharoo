@@ -149,4 +149,9 @@ public sealed class FeatureRepository(BaseDbContext context) : IFeatureRepositor
     {
         return context.Environments.SingleOrDefaultAsync(x => x.Id == environmentId && x.Owner.Id == getUserId);
     }
+    
+    public Task<User?> GetUserAsync(Guid userId)
+    {
+        return context.Users.SingleOrDefaultAsync(x => x.Id == userId);
+    }
 }

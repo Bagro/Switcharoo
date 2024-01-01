@@ -18,7 +18,7 @@ public sealed class AddEnvironmentEndpoint : IEndpoint
             .Produces<string>(StatusCodes.Status409Conflict);
     }
     
-    public static async Task<IResult> HandleAsync(AddEnvironmentRequest request, ClaimsPrincipal user, IEnvironmentRepository environmentRepository, IUserRepository userRepository, CancellationToken cancellationToken)
+    public static async Task<IResult> HandleAsync(AddEnvironmentRequest request, ClaimsPrincipal user, IEnvironmentRepository environmentRepository, CancellationToken cancellationToken)
     {
         
         if (!await environmentRepository.IsNameAvailableAsync(request.Name, user.GetUserId()))
@@ -26,7 +26,7 @@ public sealed class AddEnvironmentEndpoint : IEndpoint
             return Results.Conflict("Name is already in use");
         }
 
-        var storedUser = await userRepository.GetUserAsync(user.GetUserId());
+        var storedUser = await environmentRepository.GetUserAsync(user.GetUserId());
         
         if (storedUser is null)
         {

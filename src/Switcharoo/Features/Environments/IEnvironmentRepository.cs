@@ -1,8 +1,9 @@
+using Switcharoo.Common;
 using Environment = Switcharoo.Database.Entities.Environment;
 
 namespace Switcharoo.Features.Environments;
 
-public interface IEnvironmentRepository
+public interface IEnvironmentRepository : IUserRepository
 {
     Task AddEnvironmentAsync(Environment environment);
     

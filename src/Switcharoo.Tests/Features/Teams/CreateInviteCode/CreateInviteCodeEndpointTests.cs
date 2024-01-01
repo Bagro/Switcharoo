@@ -1,11 +1,10 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using NSubstitute;
-using Switcharoo.Common;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
+using Switcharoo.Features.Teams;
 using Switcharoo.Features.Teams.CreateInviteCode;
-using Switcharoo.Interfaces;
 using Switcharoo.Tests.Common;
 using Xunit;
 
@@ -20,11 +19,10 @@ public sealed class CreateInviteCodeEndpointTests
         var request = new CreateInviteCodeRequest(Guid.NewGuid());
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns((User?)null);
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns((User?)null);
 
         // Act
-        var result = await CreateInviteCodeEndpoint.HandleAsync(request, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await CreateInviteCodeEndpoint.HandleAsync(request, user, teamRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<BadRequest<string>>().Which.Value.Should().Be("User not found");
@@ -37,13 +35,13 @@ public sealed class CreateInviteCodeEndpointTests
         var request = new CreateInviteCodeRequest(Guid.NewGuid());
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
         var storedUser = UserFakes.GetFakeUser();
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(storedUser);
+        
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns(storedUser);
         teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns((Team?)null);
 
         // Act
-        var result = await CreateInviteCodeEndpoint.HandleAsync(request, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await CreateInviteCodeEndpoint.HandleAsync(request, user, teamRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<BadRequest<string>>().Which.Value.Should().Be("Team not found");
@@ -56,14 +54,14 @@ public sealed class CreateInviteCodeEndpointTests
         var request = new CreateInviteCodeRequest(Guid.NewGuid());
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
         var storedUser = UserFakes.GetFakeUser();
         var team = TeamFakes.GetFakeTeam();
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(storedUser);
+        
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns(storedUser);
         teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(team);
 
         // Act
-        var result = await CreateInviteCodeEndpoint.HandleAsync(request, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await CreateInviteCodeEndpoint.HandleAsync(request, user, teamRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<ForbidHttpResult>();
@@ -76,16 +74,16 @@ public sealed class CreateInviteCodeEndpointTests
         var request = new CreateInviteCodeRequest(Guid.NewGuid());
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
         var storedUser = UserFakes.GetFakeUser();
         storedUser.Id = user.GetUserId();
         var team = TeamFakes.GetFakeTeam();
         team.Owner = storedUser;
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(storedUser);
+        
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns(storedUser);
         teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(team);
 
         // Act
-        var result = await CreateInviteCodeEndpoint.HandleAsync(request, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await CreateInviteCodeEndpoint.HandleAsync(request, user, teamRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<Ok<CreateInviteCodeResponse>>();
@@ -98,16 +96,16 @@ public sealed class CreateInviteCodeEndpointTests
         var request = new CreateInviteCodeRequest(Guid.NewGuid());
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var teamRepository = Substitute.For<ITeamRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
         var storedUser = UserFakes.GetFakeUser();
         storedUser.Id = user.GetUserId();
         var team = TeamFakes.GetFakeTeam();
         team.Owner = storedUser;
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(storedUser);
+        
+        teamRepository.GetUserAsync(Arg.Any<Guid>()).Returns(storedUser);
         teamRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(team);
 
         // Act
-        var result = await CreateInviteCodeEndpoint.HandleAsync(request, user, teamRepository, userRepository, CancellationToken.None);
+        var result = await CreateInviteCodeEndpoint.HandleAsync(request, user, teamRepository, CancellationToken.None);
 
         // Assert
         result.Should().BeOfType<Ok<CreateInviteCodeResponse>>().Which.Value.InviteCode.Should().NotBe(Guid.Empty);

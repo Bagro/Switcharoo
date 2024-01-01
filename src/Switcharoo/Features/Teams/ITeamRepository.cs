@@ -1,9 +1,10 @@
+using Switcharoo.Common;
 using Switcharoo.Database.Entities;
 using Environment = Switcharoo.Database.Entities.Environment;
 
-namespace Switcharoo.Interfaces;
+namespace Switcharoo.Features.Teams;
 
-public interface ITeamRepository
+public interface ITeamRepository : IUserRepository
 {
     Task AddTeamAsync(Team team);
     

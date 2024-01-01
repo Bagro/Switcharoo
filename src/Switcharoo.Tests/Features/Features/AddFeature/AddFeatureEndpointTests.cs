@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using NSubstitute;
-using Switcharoo.Common;
 using Switcharoo.Database.Entities;
 using Switcharoo.Extensions;
 using Switcharoo.Features.Features;
@@ -44,8 +43,7 @@ public sealed class AddFeatureEndpointTests
         var environment = EnvironmentFakes.GetFakeEnvironment();
         featureRepository.GetEnvironmentAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(environment);
         
-        var userRepository = Substitute.For<IUserRepository>();
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
+        featureRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
         
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var addFeatureRequest = new AddFeatureRequest("Test Feature", "test-feature", "Test feature", 
@@ -54,7 +52,7 @@ public sealed class AddFeatureEndpointTests
         ]);
 
         // Act
-        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, userRepository, CancellationToken.None);
+        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, CancellationToken.None);
         
         // Assert
         result.Should().BeOfType<Ok<AddFeatureResponse>>();
@@ -71,8 +69,7 @@ public sealed class AddFeatureEndpointTests
         var environment = EnvironmentFakes.GetFakeEnvironment();
         featureRepository.GetEnvironmentAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(environment);
         
-        var userRepository = Substitute.For<IUserRepository>();
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
+        featureRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
         
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var addFeatureRequest = new AddFeatureRequest("Test Feature", "test-feature", "Test feature", 
@@ -81,7 +78,7 @@ public sealed class AddFeatureEndpointTests
         ]);
 
         // Act
-        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, userRepository, CancellationToken.None);
+        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, CancellationToken.None);
         
         // Assert
         ((Ok<AddFeatureResponse>) result).Value.Id.Should().NotBe(Guid.Empty);
@@ -99,10 +96,9 @@ public sealed class AddFeatureEndpointTests
         featureRepository.GetEnvironmentAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(environment);
         
         var user = UserHelper.GetClaimsPrincipalWithClaims();
-        var userRepository = Substitute.For<IUserRepository>();
         var fakeUser = UserFakes.GetFakeUser();
         fakeUser.Id = user.GetUserId();
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(fakeUser);
+        featureRepository.GetUserAsync(Arg.Any<Guid>()).Returns(fakeUser);
         
         var addFeatureRequest = new AddFeatureRequest("Test Feature", "test-feature", "Test feature", 
         [
@@ -113,7 +109,7 @@ public sealed class AddFeatureEndpointTests
         await featureRepository.AddFeatureAsync(Arg.Do<Feature>(x => feature = x));
         
         // Act
-        await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, userRepository, CancellationToken.None);
+        await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, CancellationToken.None);
         
         // Assert
         feature.Should().NotBeNull("feature should have been added");
@@ -135,14 +131,13 @@ public sealed class AddFeatureEndpointTests
         featureRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(false);
         featureRepository.IsKeyAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
         
-        var userRepository = Substitute.For<IUserRepository>();
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
+        featureRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
         
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var addFeatureRequest = new AddFeatureRequest("Test Feature", "test-feature", "Test feature", null);
         
         // Act
-        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, userRepository, CancellationToken.None);
+        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, CancellationToken.None);
         
         // Assert
         result.Should().BeOfType<Conflict<string>>().Which.Value.Should().Be("Name is already in use");
@@ -156,14 +151,13 @@ public sealed class AddFeatureEndpointTests
         featureRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
         featureRepository.IsKeyAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(false);
         
-        var userRepository = Substitute.For<IUserRepository>();
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
+        featureRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
         
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var addFeatureRequest = new AddFeatureRequest("Test Feature", "test-feature", "Test feature", null);
         
         // Act
-        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, userRepository, CancellationToken.None);
+        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, CancellationToken.None);
         
         // Assert
         result.Should().BeOfType<Conflict<string>>().Which.Value.Should().Be("Key is already in use");
@@ -177,13 +171,12 @@ public sealed class AddFeatureEndpointTests
     {
         // Arrange
         var featureRepository = Substitute.For<IFeatureRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
         
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var addFeatureRequest = new AddFeatureRequest(name, "test-feature", "Test feature", null);
         
         // Act
-        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, userRepository, CancellationToken.None);
+        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, CancellationToken.None);
         
         // Assert
         result.Should().BeOfType<BadRequest<string>>().Which.Value.Should().Be("Name is required");
@@ -197,13 +190,12 @@ public sealed class AddFeatureEndpointTests
     {
         // Arrange
         var featureRepository = Substitute.For<IFeatureRepository>();
-        var userRepository = Substitute.For<IUserRepository>();
         
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var addFeatureRequest = new AddFeatureRequest("Test Feature", key, "Test feature", null);
         
         // Act
-        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, userRepository, CancellationToken.None);
+        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, CancellationToken.None);
         
         // Assert
         result.Should().BeOfType<BadRequest<string>>().Which.Value.Should().Be("Key is required");
@@ -217,14 +209,13 @@ public sealed class AddFeatureEndpointTests
         featureRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
         featureRepository.IsKeyAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
         
-        var userRepository = Substitute.For<IUserRepository>();
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns((User?)null);
+        featureRepository.GetUserAsync(Arg.Any<Guid>()).Returns((User?)null);
         
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var addFeatureRequest = new AddFeatureRequest("Test Feature", "test-feature", "Test feature", null);
         
         // Act
-        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, userRepository, CancellationToken.None);
+        var result = await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, CancellationToken.None);
         
         // Assert
         result.Should().BeOfType<BadRequest<string>>().Which.Value.Should().Be("User not found");
@@ -238,14 +229,13 @@ public sealed class AddFeatureEndpointTests
         featureRepository.IsNameAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
         featureRepository.IsKeyAvailableAsync(Arg.Any<string>(), Arg.Any<Guid>()).Returns(true);
         
-        var userRepository = Substitute.For<IUserRepository>();
-        userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
+        featureRepository.GetUserAsync(Arg.Any<Guid>()).Returns(UserFakes.GetFakeUser());
         
         var user = UserHelper.GetClaimsPrincipalWithClaims();
         var addFeatureRequest = new AddFeatureRequest("Test Feature", "test-feature", "Test feature", null);
         
         // Act
-        await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, userRepository, CancellationToken.None);
+        await AddFeatureEndpoint.HandleAsync(addFeatureRequest, user , featureRepository, CancellationToken.None);
         
         // Assert
         await featureRepository.Received(1).AddFeatureAsync(Arg.Any<Feature>());
