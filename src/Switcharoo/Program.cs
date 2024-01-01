@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Switcharoo.Common;
 using Switcharoo.Database;
 using Switcharoo.Database.Entities;
@@ -34,7 +35,10 @@ builder.Services.AddCors(
                 .SetIsOriginAllowedToAllowWildcardSubdomains();
         }));
 
+builder.Services.AddOptions<SmtpSettings>().Bind(builder.Configuration.GetSection(nameof(SmtpSettings)));
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddFeatures();
 builder.Services.AddEnvironments();
 builder.Services.AddTeams();
