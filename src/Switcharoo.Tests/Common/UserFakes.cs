@@ -9,7 +9,9 @@ public static class UserFakes
     {
         var faker = new Faker<User>()
             .RuleFor(x => x.Id, f => f.Random.Guid())
-            .RuleFor(x => x.Email, f => f.Internet.Email());
+            .RuleFor(x => x.Email, f => f.Internet.Email())
+            .RuleFor(x => x.DefaultTeamAllowToggle, f => f.Random.Bool())
+            .RuleFor(x => x.DefaultTeamReadOnly, f => f.Random.Bool());
 
         if (seed > 0)
         {

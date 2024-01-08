@@ -6,6 +6,7 @@ public sealed record Feature
     public string Name { get; set; }
     public string Key { get; set; }
     public string Description { get; set; }
+    public bool ShareWithTeam { get; set; }
     public User Owner { get; set; }
     public List<FeatureEnvironment> Environments { get; set; }
 }

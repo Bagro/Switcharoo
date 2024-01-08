@@ -45,6 +45,8 @@ public sealed class LeaveTeamEndpoint : IEndpoint
         }
         
         team.Members.Remove(storedUser);
+        team.Features.RemoveAll(x => x.Feature.Owner == storedUser);
+        team.Environments.RemoveAll(x => x.Environment.Owner == storedUser);
 
         await userFeatureRepository.UpdateTeamAsync(team);
 

@@ -171,6 +171,8 @@ public sealed class AcceptTeamInviteEndpointTests
         userRepository.GetUserAsync(Arg.Any<Guid>()).Returns(fakeUser);
         userRepository.GetTeamInviteAsync(Arg.Any<Guid>()).Returns(teamInvite);
         userRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(team);
+        userRepository.GetSharedFeatures(Arg.Any<Guid>()).Returns([FeatureFakes.GetFakeFeature()]);
+        userRepository.GetSharedEnvironments(Arg.Any<Guid>()).Returns([EnvironmentFakes.GetFakeEnvironment()]);
         
         var endpoint = new AcceptTeamInviteEndpoint();
         

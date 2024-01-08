@@ -12,6 +12,7 @@ public static class FeatureFakes
             .RuleFor(x => x.Name, f => f.Random.Word())
             .RuleFor(x => x.Description, f => f.Random.Word())
             .RuleFor(x => x.Key, f => f.Random.Word())
+            .RuleFor(x => x.ShareWithTeam, f => f.Random.Bool())
             .RuleFor(x => x.Owner, (_, _) => UserFakes.GetFakeUser(seed))
             .RuleFor(x => x.Environments, (_, _) => FeatureEnvironmentFakes.GetFakeFeatureEnvironments(environmentCount, seed).ToList());
             

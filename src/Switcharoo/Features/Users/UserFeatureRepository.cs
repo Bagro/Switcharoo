@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Switcharoo.Database;
 using Switcharoo.Database.Entities;
+using Environment = Switcharoo.Database.Entities.Environment;
 
 namespace Switcharoo.Features.Users;
 
@@ -25,5 +26,15 @@ public sealed class UserFeatureRepository(BaseDbContext context) : IUserFeatureR
     {
         context.Teams.Update(team);
         await context.SaveChangesAsync();
+    }
+
+    public Task<List<Feature>> GetSharedFeatures(Guid userId)
+    {
+        return context.Features.Where(x => x.ShareWithTeam && x.Owner.Id == userId).ToListAsync();
+    }
+
+    public Task<List<Environment>> GetSharedEnvironments(Guid userId)
+    {
+        return context.Environments.Where(x => x.ShareWithTeam && x.Owner.Id == userId).ToListAsync();
     }
 }

@@ -23,7 +23,8 @@ public static class EnvironmentFakes
     {
         var faker = new Faker<Environment>()
             .RuleFor(x => x.Id, f => f.Random.Guid())
-            .RuleFor(x => x.Name, f => f.Random.Word());
+            .RuleFor(x => x.Name, f => f.Random.Word())
+            .RuleFor(x => x.ShareWithTeam, f => f.Random.Bool());
 
         if (seed > 0)
         {

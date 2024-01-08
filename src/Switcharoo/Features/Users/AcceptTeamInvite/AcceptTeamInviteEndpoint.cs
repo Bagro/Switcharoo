@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Switcharoo.Common;
 using Switcharoo.Extensions;
+using Switcharoo.Features.Users.Shared;
 
 namespace Switcharoo.Features.Users.AcceptTeamInvite;
 
@@ -61,6 +62,9 @@ public sealed class AcceptTeamInviteEndpoint : IEndpoint
         }
 
         team.Members.Add(storedUser);
+        
+        await UserSharedToTeamHelper.AddUsersFeaturesToTeam(team, storedUser, userRepository);
+        await UserSharedToTeamHelper.AddUsersEnvironmentsToTeam(team, storedUser, userRepository);
 
         await userRepository.UpdateTeamAsync(team);
 

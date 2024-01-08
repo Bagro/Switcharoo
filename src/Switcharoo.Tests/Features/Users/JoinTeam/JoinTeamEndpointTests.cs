@@ -131,6 +131,8 @@ public sealed class JoinTeamEndpointTests
         var userFeatureRepository = Substitute.For<IUserFeatureRepository>();
         userFeatureRepository.GetUserAsync(Arg.Any<Guid>()).Returns(fakeUser);
         userFeatureRepository.GetTeamAsync(Arg.Any<Guid>()).Returns(fakeTeam);
+        userFeatureRepository.GetSharedFeatures(Arg.Any<Guid>()).Returns([FeatureFakes.GetFakeFeature()]);
+        userFeatureRepository.GetSharedEnvironments(Arg.Any<Guid>()).Returns([EnvironmentFakes.GetFakeEnvironment()]);
         
         var joinTeamEndpoint = new JoinTeamEndpoint();
 
